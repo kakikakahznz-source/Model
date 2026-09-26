@@ -188,6 +188,19 @@ async function markRead(id){
     }catch(e){ alert('❌ خطأ: '+e.message); }
 }
 
+async function resetDev(email){
+    if(!confirm('إعادة تعيين جهاز: '+email+'؟\n(يسمح بتفعيل اشتراكه على هاتف جديد)')) return;
+    try{
+        const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/reset_device', {
+            method:'POST',
+            headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'},
+            body:JSON.stringify({p_email:email, p_code:ADMIN_CODE})
+        });
+        const ok = await r.json();
+        alert(ok===true ? '✅ تمت إعادة التعيين' : '❌ فشل');
+    }catch(e){ alert('❌ خطأ: '+e.message); }
+}
+
 async function loadSubs(){
     const r = await fetch(SUPABASE_URL + '/rest/v1/subscribers?select=email,name,method,amount,status,created_at&order=created_at.desc', {
         headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}
@@ -195,9 +208,10 @@ async function loadSubs(){
     const rows = await r.json();
     const box = document.getElementById('subsList');
     if(!Array.isArray(rows) || !rows.length){ box.innerHTML='<small>لا يوجد مشتركون بعد</small>'; return; }
-    let h = '<table><tr><th>الإيميل</th><th>الطريقة</th><th>المبلغ</th><th>الحالة</th></tr>';
+    let h = '<table><tr><th>الإيميل</th><th>الطريقة</th><th>المبلغ</th><th>الحالة</th><th>إجراء</th></tr>';
     rows.forEach(s=>{
-        h += '<tr><td>'+ (s.email||'') +'<br><small>'+(s.name||'')+'</small></td><td>'+(s.method||'')+'</td><td>'+(s.amount||'')+'</td><td><span class="badge '+(s.status==='active'?'on':'off')+'">'+(s.status==='active'?'فعّال':'منتهي')+'</span></td></tr>';
+        h += '<tr><td>'+ (s.email||'') +'<br><small>'+(s.name||'')+'</small></td><td>'+(s.method||'')+'</td><td>'+(s.amount||'')+'</td><td><span class="badge '+(s.status==='active'?'on':'off')+'">'+(s.status==='active'?'فعّال':'منتهي')+'</span></td>'
+           + '<td><button style="width:auto;padding:0.2rem 0.6rem;font-size:0.7rem;margin:0" title="يسمح بتفعيل جهاز جديد" onclick="resetDev(\''+(s.email||'')+'\')">🔄 جهاز</button></td></tr>';
     });
     box.innerHTML = h + '</table>';
 }
