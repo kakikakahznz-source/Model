@@ -436,6 +436,10 @@
     </section>
 
     <section class="actions">
+        <button type="button" class="btn btn-outline" onclick="loginWithEmail()" style="margin-bottom:0.85rem">
+            <span class="ar">📧 عندي اشتراك — فعّل بإيميلي</span>
+            <span class="en">📧 I have a subscription — activate by email</span>
+        </button>
         <button type="button" class="btn btn-subscribe" onclick="openSubscribe()" id="btnSubscribe">
             <span class="ar">⭐ اشترك الآن — 15$ / شهر</span>
             <span class="en">⭐ Subscribe Now — $15 / mo</span>
@@ -537,6 +541,8 @@
         const CHARGILY_PUBLIC_KEY = 'test_pk_Qb0d6yzTPxEae09n5mufnK1KSx8g8YLCCmcYGg55'; // Chargily Public Key
         const CHARGILY_SECRET_KEY = 'test_sk_6mymr0D6fzv8Mu2Ix3NwN9mfCBj7n3YGBygUgswa'; // Chargily Secret (test)
         const CHARGILY_MODE = 'test'; // 'test' للتجربة ← غيّرها إلى 'live' عند الإطلاق
+        const SUPABASE_URL = 'https://mkgsewcvfftilcdatgqg.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_sSZbTaNKIwMEzhPQhPnE3g_Xj-xsNZP'; // Publishable (آمن للعرض)
         // اختياري: ضع رابط الدفع الجاهز إن أردت استخدامه بدلاً من API
         const CHARGILY_PAYMENT_LINK = ''; // مثال: 'https://pay.chargily.net/test-mode/...'
         // =======================================================
@@ -688,6 +694,78 @@ _____________
         }
 
 
+
+        // ============ Supabase: التفعيل المركزي ============
+        async function sbRpc(fnName, params) {
+            const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/' + fnName, {
+                method: 'POST',
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(params)
+            });
+            if (!res.ok) throw new Error(fnName + ' HTTP ' + res.status);
+            return res.json();
+        }
+
+        async function sbRegister(user) {
+            try {
+                await sbRpc('register_subscriber', {
+                    p_email: user.email, p_name: user.name || '',
+                    p_phone: user.phone || '', p_method: user.method || '',
+                    p_amount: user.amount || '', p_order_id: user.orderId || ''
+                });
+            } catch (e) { console.warn('Supabase register:', e); }
+        }
+
+        async function sbCheck(email) {
+            try {
+                const r = await sbRpc('check_subscription', { p_email: email });
+                return r === true;
+            } catch (e) { console.warn('Supabase check:', e); return null; }
+        }
+
+        // التحقق المركزي عند فتح الموقع: الاشتراك يتبع الإيميل وليس الجهاز
+        async function verifyCentral() {
+            const saved = localStorage.getItem('mymodel_user');
+            if (!saved) return;
+            let user; try { user = JSON.parse(saved); } catch { return; }
+            if (!user.email) return;
+            const active = await sbCheck(user.email);
+            if (active === true) {
+                localStorage.setItem('mymodel_paid', '1');
+                updatePaidUI();
+            } else if (active === false) {
+                localStorage.removeItem('mymodel_paid');
+                updatePaidUI();
+            }
+        }
+
+        // دخول بالإيميل من أي جهاز جديد
+        async function loginWithEmail() {
+            const email = prompt(isEn()
+                ? 'Enter your subscription email to activate on this device:'
+                : 'أدخل إيميل اشتراكك لتفعيله على هذا الجهاز:');
+            if (!email) return;
+            document.getElementById('status').textContent = isEn() ? 'Checking subscription...' : 'جاري التحقق من الاشتراك...';
+            const active = await sbCheck(email.trim());
+            if (active === true) {
+                localStorage.setItem('mymodel_paid', '1');
+                localStorage.setItem('mymodel_user', JSON.stringify({ email: email.trim(), method: 'email-login' }));
+                updatePaidUI();
+                document.getElementById('status').textContent = isEn()
+                    ? '✅ Subscription found! Activated on this device.'
+                    : '✅ تم العثور على اشتراكك! تم التفعيل على هذا الجهاز.';
+            } else {
+                document.getElementById('status').textContent = isEn()
+                    ? '❌ No active subscription found for this email.'
+                    : '❌ لا يوجد اشتراك فعّال بهذا الإيميل.';
+            }
+        }
+        // ==================================================
+
         let paypalRendered = false;
         function renderPayPal() {
             if (window.paypal) { if (!paypalRendered) mountPayPal(); return; }
@@ -740,6 +818,7 @@ _____________
             localStorage.setItem('mymodel_user', JSON.stringify(userData));
             localStorage.removeItem('mymodel_pending');
             updatePaidUI();
+            sbRegister(userData); // تسجيل مركزي في قاعدة البيانات
             // Show success banner inside modal, then close
             const banner = document.getElementById('paySuccess');
             if (banner) banner.classList.add('show');
@@ -932,6 +1011,7 @@ _____________
 
         // Init paid state
         updatePaidUI();
+        verifyCentral(); // تحقق مركزي من الاشتراك عبر Supabase
 
         renderPrompts();
     </script>
