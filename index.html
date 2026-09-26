@@ -717,7 +717,7 @@ _____________
             document.getElementById('status').textContent = '';
         }
 
-        let payMethod = 'card';
+        let payMethod = 'transfer';
 
         function isPaid() {
             return localStorage.getItem('mymodel_paid') === '1';
@@ -739,7 +739,7 @@ _____________
         }
 
         function openSubscribe() {
-            setPayMethod('card');
+            setPayMethod('transfer');
             document.getElementById('subscribeModal').classList.add('active');
         }
 
@@ -813,6 +813,133 @@ _____________
                         : '⏳ ما زلنا نتحقق من دفعتك — سيُفعَّل تلقائياً قريباً، أو اضغط زر 📧 بالأسفل.';
                 }
             }, 20000);
+        }
+
+        function adminLogin() {
+            const code = prompt(isEn() ? 'Admin access code:' : 'أدخل رمز الدخول الإداري:');
+            if (code === null) return;
+            if (code === ADMIN_CODE) {
+                window.open('admin.html', '_blank');
+            } else if (code !== '') {
+                alert(isEn() ? 'Wrong code' : 'رمز خاطئ');
+            }
+        }
+
+        // ============ Supabase: التفعيل المركزي ============
+        async function sbRpc(fnName, params) {
+            const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/' + fnName, {
+                method: 'POST',
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(params)
+            });
+            if (!res.ok) throw new Error(fnName + ' HTTP ' + res.status);
+            return res.json();
+        }
+
+        async function sbRegister(user) {
+            try {
+                await sbRpc('register_subscriber', {
+                    p_email: user.email, p_name: user.name || '',
+                    p_phone: user.phone || '', p_method: user.method || '',
+                    p_amount: user.amount || '', p_order_id: user.orderId || ''
+                });
+            } catch (e) { console.warn('Supabase register:', e); }
+        }
+
+        async function sbCheck(email) {
+            try {
+                const r = await sbRpc('check_subscription', { p_email: email });
+                return r === true;
+            } catch (e) { console.warn('Supabase check:', e); return null; }
+        }
+
+        async function verifyCentral() {
+            const saved = localStorage.getItem('mymodel_user');
+            if (!saved) return;
+            let user; try { user = JSON.parse(saved); } catch { return; }
+            if (!user.email) return;
+            const active = await sbCheck(user.email);
+            if (active === true) {
+                localStorage.setItem('mymodel_paid', '1');
+                updatePaidUI();
+            } else if (active === false) {
+                localStorage.removeItem('mymodel_paid');
+                updatePaidUI();
+            }
+        }
+
+        async function loginWithEmail() {
+            let savedEmail = '';
+            try { savedEmail = (JSON.parse(localStorage.getItem('mymodel_user') || '{}')).email || ''; } catch {}
+            const email = prompt(isEn()
+                ? 'Enter your subscription email to activate on this device:'
+                : 'أدخل إيميل اشتراكك لتفعيله على هذا الجهاز:', savedEmail);
+            if (!email) return;
+            document.getElementById('status').textContent = isEn() ? 'Checking subscription...' : 'جاري التحقق من الاشتراك...';
+            const active = await sbCheck(email.trim());
+            if (active === true) {
+                localStorage.setItem('mymodel_paid', '1');
+                localStorage.setItem('mymodel_user', JSON.stringify({ email: email.trim(), method: 'email-login' }));
+                updatePaidUI();
+                document.getElementById('status').textContent = isEn()
+                    ? '✅ Subscription found! Activated on this device.'
+                    : '✅ تم العثور على اشتراكك! تم التفعيل على هذا الجهاز.';
+            } else {
+                document.getElementById('status').textContent = isEn()
+                    ? '❌ No active subscription for this email yet. If you just paid, please wait a few minutes for activation.'
+                    : '❌ لا يوجد اشتراك فعّال بهذا الإيميل بعد. إذا دفعت للتو، انتظر دقائق حتى يتم التفعيل.';
+            }
+        }
+
+        // ============ PayPal Smart Buttons ============
+        let paypalRendered = false;
+        function renderPayPal() {
+            if (window.paypal) { if (!paypalRendered) mountPayPal(); return; }
+            const s = document.createElement('script');
+            s.src = 'https://www.paypal.com/sdk/js?client-id=' + PAYPAL_CLIENT_ID +
+                    '&currency=USD&intent=capture&components=buttons';
+            s.onload = () => { paypalRendered = true; mountPayPal(); };
+            s.onerror = () => {
+                document.getElementById('paypal-button-container').innerHTML =
+                    '<div style="color:#ff8a80;font-size:0.85rem;text-align:center">' +
+                    (isEn() ? 'PayPal failed to load. Check your connection or Client ID.' : 'تعذر تحميل PayPal. تحقق من الاتصال أو Client ID.') + '</div>';
+            };
+            document.head.appendChild(s);
+        }
+
+        function mountPayPal() {
+            const box = document.getElementById('paypal-button-container');
+            if (!box || box.dataset.mounted === '1') return;
+            box.dataset.mounted = '1';
+            window.paypal.Buttons({
+                style: { layout: 'vertical', color: 'gold', shape: 'pill', label: 'pay' },
+                createOrder: (data, actions) => actions.order.create({
+                    purchase_units: [{
+                        description: 'MyModel Subscription - 1 month',
+                        custom_id: 'mymodel-sub',
+                        amount: { value: PRICE_USD, currency_code: 'USD' }
+                    }]
+                }),
+                onApprove: (data, actions) => actions.order.capture().then(details => {
+                    const payer = details.payer || {};
+                    const pName = payer.name ? (payer.name.given_name + ' ' + (payer.name.surname || '')) : '';
+                    activateSubscription({
+                        name: pName,
+                        email: payer.email_address || '',
+                        phone: '',
+                        method: 'paypal',
+                        amount: PRICE_USD + ' USD',
+                        orderId: details.id
+                    });
+                }),
+                onError: () => {
+                    alert(isEn() ? 'Payment error. Please try again.' : 'حدث خطأ في الدفع. حاول مجدداً.');
+                }
+            }).render('#paypal-button-container');
         }
 
         function sendProof() {
