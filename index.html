@@ -496,6 +496,15 @@
                 </button>
             </div>
 
+            <!-- PayPal Smart Buttons (يظهر عند اختيار PayPal) -->
+            <div id="paypalBox" style="display:none; margin-top:1rem;">
+                <div id="paypal-button-container"></div>
+                <div class="gold-note" style="text-align:center">
+                    <span class="ar">اضغط زر PayPal لإتمام الدفع بأمان — التفعيل فوري.</span>
+                    <span class="en">Click the PayPal button to pay securely — instant activation.</span>
+                </div>
+            </div>
+
             <!-- In-site Golden Card payment form -->
             <div class="gold-form show" id="goldForm">
                 <label style="margin-top:0.8rem"><span class="ar">رقم البطاقة الذهبية</span><span class="en">Gold Card number</span></label>
@@ -528,6 +537,12 @@
     </footer>
 
     <script>
+        // ============ الإعدادات — عدّل القيم هنا فقط ============
+        const PAYPAL_CLIENT_ID = 'BAAfLmGRVCpE3Vj6kSTEy1UddEOwVqZREEUg_V7iThqyzDQj1aovwHiAF_koGm9hzS3a945hb4PrzMEQQY'; // PayPal Live Client ID
+        const PRICE_USD = '15.00';        // سعر PayPal
+        const PRICE_GOLD_DZD = 3500;      // سعر البطاقة الذهبية
+        const GOOGLE_FLOW_URL = 'https://labs.google/fx/tools/flow'; // رابط التطبيق بعد الدفع
+        // =======================================================
         const bodyTypes = [
             { id: 'slim', ar: 'نحيفة', en: 'Slim' },
             { id: 'curvy', ar: 'عريضة', en: 'Curvy' },
@@ -645,7 +660,7 @@ _____________
 
         function openApp() {
             if (!requireAccount()) return;
-            window.open('https://labs.google/fx/tools/flow', '_blank');
+            window.open(GOOGLE_FLOW_URL, '_blank');
         }
 
         function openSubscribe() {
@@ -661,6 +676,8 @@ _____________
             document.getElementById('payGold').classList.toggle('active', m === 'gold');
             document.getElementById('payCard').classList.toggle('active', m === 'card');
             document.getElementById('goldForm').classList.toggle('show', m === 'gold');
+            document.getElementById('paypalBox').style.display = m === 'card' ? 'block' : 'none';
+            if (m === 'card') renderPayPal();
         }
 
         function formatCardNum(el) {
@@ -671,6 +688,53 @@ _____________
             let v = el.value.replace(/[^0-9]/g, '').slice(0, 4);
             if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2);
             el.value = v;
+        }
+
+
+        let paypalRendered = false;
+        function renderPayPal() {
+            if (window.paypal) { if (!paypalRendered) mountPayPal(); return; }
+            const s = document.createElement('script');
+            s.src = 'https://www.paypal.com/sdk/js?client-id=' + PAYPAL_CLIENT_ID +
+                    '&currency=USD&intent=capture&components=buttons';
+            s.onload = () => { paypalRendered = true; mountPayPal(); };
+            s.onerror = () => {
+                document.getElementById('paypal-button-container').innerHTML =
+                    '<div style="color:#ff8a80;font-size:0.85rem;text-align:center">' +
+                    (isEn() ? 'PayPal failed to load. Check your connection or Client ID.' : 'تعذر تحميل PayPal. تحقق من الاتصال أو Client ID.') + '</div>';
+            };
+            document.head.appendChild(s);
+        }
+
+        function mountPayPal() {
+            const box = document.getElementById('paypal-button-container');
+            if (!box || box.dataset.mounted === '1') return;
+            box.dataset.mounted = '1';
+            window.paypal.Buttons({
+                style: { layout: 'vertical', color: 'gold', shape: 'pill', label: 'pay' },
+                createOrder: (data, actions) => actions.order.create({
+                    purchase_units: [{
+                        description: 'MyModel Subscription - 1 month',
+                        custom_id: 'mymodel-sub',
+                        amount: { value: PRICE_USD, currency_code: 'USD' }
+                    }]
+                }),
+                onApprove: (data, actions) => actions.order.capture().then(details => {
+                    const payer = details.payer || {};
+                    const pName = payer.name ? (payer.name.given_name + ' ' + (payer.name.surname || '')) : '';
+                    activateSubscription({
+                        name: pName || document.getElementById('subName').value,
+                        email: payer.email_address || document.getElementById('subEmail').value,
+                        phone: document.getElementById('subPhone') ? document.getElementById('subPhone').value : '',
+                        method: 'paypal',
+                        amount: PRICE_USD + ' USD',
+                        orderId: details.id
+                    });
+                }),
+                onError: () => {
+                    alert(isEn() ? 'Payment error. Please try again.' : 'حدث خطأ في الدفع. حاول مجدداً.');
+                }
+            }).render('#paypal-button-container');
         }
 
         // Automatic activation after successful payment
@@ -734,32 +798,12 @@ _____________
                 return;
             }
 
-            // PayPal payment
-            const paypalEmail = 'hamidounaar22@gmail.com';
-            const amount = '15.00'; // $15 / month
-            const itemName = encodeURIComponent('MyModel Subscription - عارضتي اشتراك شهري');
-            const custom = encodeURIComponent(name + ' | ' + email + ' | ' + phone);
-
-            // Save pending user data
-            localStorage.setItem('mymodel_pending', JSON.stringify({ name, email, phone, method: 'paypal' }));
-
-            // Redirect to PayPal
-            const paypalUrl = 'https://www.paypal.com/cgi-bin/webscr'
-                + '?cmd=_xclick'
-                + '&business=' + encodeURIComponent(paypalEmail)
-                + '&item_name=' + itemName
-                + '&amount=' + amount
-                + '&currency_code=USD'
-                + '&no_shipping=1'
-                + '&custom=' + custom
-                + '&return=' + encodeURIComponent(window.location.href.split('?')[0] + '?paid=1')
-                + '&cancel_return=' + encodeURIComponent(window.location.href.split('?')[0] + '?cancel=1');
-
-            closeSubscribe();
-            document.getElementById('status').textContent = isEn()
-                ? 'Redirecting to PayPal...'
-                : 'جاري التحويل إلى PayPal...';
-            window.location.href = paypalUrl;
+            // PayPal — يُنجَز عبر زر PayPal الذكي في النافذة (onApprove يفعّل تلقائياً)
+            if (!window.paypal) { renderPayPal(); }
+            document.getElementById('paypalBox').style.display = 'block';
+            alert(isEn()
+                ? 'Complete the payment with the PayPal button below — activation is instant.'
+                : 'أكمل الدفع عبر زر PayPal بالأسفل — التفعيل فوري.');
         }
 
         function updatePaidUI() {
