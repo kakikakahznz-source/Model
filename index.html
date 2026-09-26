@@ -507,25 +507,17 @@
 
             <!-- In-site Golden Card payment form -->
             <div class="gold-form show" id="goldForm">
-                <label style="margin-top:0.8rem"><span class="ar">رقم البطاقة الذهبية</span><span class="en">Gold Card number</span></label>
-                <input type="text" id="goldCardNum" maxlength="19" inputmode="numeric" placeholder="0000 0000 0000 0000" oninput="formatCardNum(this)">
-                <div class="row">
-                    <div>
-                        <label><span class="ar">تاريخ الانتهاء</span><span class="en">Expiry</span></label>
-                        <input type="text" id="goldCardExp" maxlength="5" inputmode="numeric" placeholder="MM/YY" oninput="formatCardExp(this)">
-                    </div>
-                    <div>
-                        <label>CVV</label>
-                        <input type="password" id="goldCardCvv" maxlength="4" inputmode="numeric" placeholder="123">
-                    </div>
+                <div class="gold-note" style="margin-top:1rem">
+                    <span class="ar">💳 ستُنقل إلى صفحة <b>Chargily</b> الآمنة لإتمام الدفع بالبطاقة الذهبية (الذهبية/EDAHABIA أو CIB).</span>
+                    <span class="en">💳 You will be redirected to secure <b>Chargily</b> checkout to pay with your gold card (EDAHABIA or CIB).</span>
                 </div>
                 <div class="gold-note">
-                    <span class="ar">🔒 دفع آمن ومشفّر داخل الموقع — يتم التفعيل التلقائي فور إتمام الدفع.</span>
-                    <span class="en">🔒 Secure encrypted in-site payment — auto-activated instantly.</span>
+                    <span class="ar">🔒 الدفع مشفّر بالكامل — يتم التفعيل التلقائي فور نجاح الدفع.</span>
+                    <span class="en">🔒 Fully encrypted — auto-activated on successful payment.</span>
                 </div>
             </div>
 
-            <button type="button" class="btn btn-gold" style="width:100%;margin-top:1.2rem" onclick="submitPayment()">
+            <button type="button" class="btn btn-gold" style="width:100%;margin-top:1.2rem" onclick="submitPayment(this)">
                 <span class="ar">تأكيد الاشتراك</span>
                 <span class="en">Confirm Subscription</span>
             </button>
@@ -542,6 +534,11 @@
         const PRICE_USD = '15.00';        // سعر PayPal
         const PRICE_GOLD_DZD = 3500;      // سعر البطاقة الذهبية
         const GOOGLE_FLOW_URL = 'https://labs.google/fx/tools/flow'; // رابط التطبيق بعد الدفع
+        const CHARGILY_PUBLIC_KEY = 'test_pk_Qb0d6yzTPxEae09n5mufnK1KSx8g8YLCCmcYGg55'; // Chargily Public Key
+        const CHARGILY_SECRET_KEY = 'test_sk_6mymr0D6fzv8Mu2Ix3NwN9mfCBj7n3YGBygUgswa'; // Chargily Secret (test)
+        const CHARGILY_MODE = 'test'; // 'test' للتجربة ← غيّرها إلى 'live' عند الإطلاق
+        // اختياري: ضع رابط الدفع الجاهز إن أردت استخدامه بدلاً من API
+        const CHARGILY_PAYMENT_LINK = ''; // مثال: 'https://pay.chargily.net/test-mode/...'
         // =======================================================
         const bodyTypes = [
             { id: 'slim', ar: 'نحيفة', en: 'Slim' },
@@ -755,7 +752,7 @@ _____________
             }, 2200);
         }
 
-        function submitPayment() {
+        function submitPayment(btn) {
             const name = document.getElementById('payName').value.trim();
             const email = document.getElementById('payEmail').value.trim();
             const phone = document.getElementById('payPhone').value.trim();
@@ -765,36 +762,58 @@ _____________
                 return;
             }
 
-            // In-site Golden Card payment (3500 DZD) — auto-activate on success
+            // Chargily — الدفع الحقيقي بالبطاقة الذهبية (3500 د.ج) عبر صفحة Chargily الآمنة
             if (payMethod === 'gold') {
-                const cardNum = (document.getElementById('goldCardNum').value || '').replace(/\s/g, '');
-                const cardExp = (document.getElementById('goldCardExp').value || '').trim();
-                const cardCvv = (document.getElementById('goldCardCvv').value || '').trim();
+                const backUrl = window.location.origin + window.location.pathname + '?paid=1&method=chargily';
+                const failUrl = window.location.href;
 
-                if (cardNum.length !== 16) {
-                    alert(isEn() ? 'Invalid card number (16 digits required)' : 'رقم البطاقة غير صحيح (16 رقماً مطلوب)');
-                    return;
-                }
-                if (!/^\d{2}\/\d{2}$/.test(cardExp)) {
-                    alert(isEn() ? 'Invalid expiry date (MM/YY)' : 'تاريخ الانتهاء غير صحيح (MM/YY)');
-                    return;
-                }
-                if (cardCvv.length < 3) {
-                    alert(isEn() ? 'Invalid CVV' : 'رمز CVV غير صحيح');
+                // الخيار 1: رابط الدفع الجاهز (الأكثر أماناً)
+                if (CHARGILY_PAYMENT_LINK) {
+                    localStorage.setItem('mymodel_pending', JSON.stringify({ name, email, phone, method: 'chargily' }));
+                    closeSubscribe();
+                    document.getElementById('status').textContent = isEn() ? 'Redirecting to Chargily...' : 'جاري التحويل إلى Chargily...';
+                    window.location.href = CHARGILY_PAYMENT_LINK;
                     return;
                 }
 
-                const btn = event.target;
+                // الخيار 2: إنشاء جلسة دفع عبر API
                 const originalHtml = btn.innerHTML;
                 btn.disabled = true;
-                btn.innerHTML = (isEn() ? 'Processing payment...' : 'جاري معالجة الدفع...') + '<span class="spinner"></span>';
+                btn.innerHTML = (isEn() ? 'Connecting to Chargily...' : 'جاري الاتصال بـ Chargily...') + '<span class="spinner"></span>';
 
-                // Simulated secure gateway processing
-                setTimeout(() => {
+                fetch('https://pay.chargily.net/api/v2/checkouts', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + CHARGILY_SECRET_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        amount: PRICE_GOLD_DZD,
+                        currency: 'DZD',
+                        success_url: backUrl,
+                        failure_url: failUrl,
+                        payment_method: ['edahabia', 'cib'],
+                        description: 'MyModel Subscription - 1 month',
+                        metadata: { name, email, phone, plan: 'monthly' }
+                    })
+                })
+                .then(r => {
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    return r.json();
+                })
+                .then(data => {
+                    localStorage.setItem('mymodel_pending', JSON.stringify({ name, email, phone, method: 'chargily' }));
+                    closeSubscribe();
+                    document.getElementById('status').textContent = isEn() ? 'Redirecting to Chargily...' : 'جاري التحويل إلى Chargily...';
+                    window.location.href = data.checkout_url;
+                })
+                .catch(err => {
                     btn.disabled = false;
                     btn.innerHTML = originalHtml;
-                    activateSubscription({ name, email, phone, method: 'gold_card', amount: '3500 DZD' });
-                }, 1800);
+                    alert(isEn()
+                        ? 'Could not connect to Chargily. Try again or use the payment link option.'
+                        : 'تعذر الاتصال بـ Chargily. حاول مجدداً أو استخدم خيار رابط الدفع.');
+                });
                 return;
             }
 
