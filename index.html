@@ -441,6 +441,15 @@
         .pay-method .pm-price { display: block; font-size: 0.72rem; opacity: 0.75; margin-top: 0.15rem; }
 
 
+        .prompt-card { padding: 0.65rem 0.85rem; }
+        .prompt-card h3 { font-size: 0.88rem; margin-bottom: 0.2rem; }
+        .prompt-card p { font-size: 0.74rem; -webkit-line-clamp: 2; }
+        .prompt-card .masked { font-size: 0.95rem; margin: 0.25rem 0 0.45rem; letter-spacing: 1.5px; }
+        .prompt-card .copy-btn { font-size: 0.72rem; padding: 0.22rem 0.7rem; }
+        .prompt-card .check { width: 16px; height: 16px; top: 8px; left: 8px; font-size: 0.55rem; }
+        .prompt-grid { grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 0.6rem; }
+        .prompt-card.active { padding-right: 0.85rem; }
+
         footer {
             text-align: center; padding: 1.8rem; color: var(--muted);
             font-size: 0.85rem; border-top: 1px solid var(--border);
@@ -465,12 +474,12 @@
 
     <section class="hero">
         <h1>
-            <span class="ar">اختر نوع العارضة</span>
-            <span class="en">Choose Model Type</span>
+            <span class="ar">حوِّل ملابسك إلى جلسة تصوير احترافية</span>
+            <span class="en">Turn Your Clothes into a Professional Photoshoot</span>
         </h1>
         <p>
-            <span class="ar">اختاري الوصف، انسخي البرومبت، ثم افتحي التطبيق وارفعِ صورة الملابس</span>
-            <span class="en">Select description, copy the prompt, then open the app and upload the clothing image</span>
+            <span class="ar">ارفع صورة أي قطعة ملابس وشاهدها على عارضة أزياء افتراضية خلال ثوانٍ — اختر البرومبت، انسخه، وابدأ</span>
+            <span class="en">Upload any clothing photo and see it on a virtual fashion model in seconds — pick a prompt, copy it, and start</span>
         </p>
     </section>
 
@@ -517,7 +526,7 @@
             <span class="ar">🚀 افتح التطبيق</span>
             <span class="en">🚀 Open the App</span>
         </button>
-        <button type="button" class="btn btn-outline" onclick="contactUs()">
+        <button type="button" class="btn btn-outline" onclick="openContact()">
             <span class="ar">💬 راسلنا</span>
             <span class="en">💬 Contact Us</span>
         </button>
@@ -813,6 +822,35 @@ _____________
                         : '⏳ ما زلنا نتحقق من دفعتك — سيُفعَّل تلقائياً قريباً، أو اضغط زر 📧 بالأسفل.';
                 }
             }, 20000);
+        }
+
+        function openContact() { document.getElementById('contactModal').classList.add('active'); }
+        function closeContact() { document.getElementById('contactModal').classList.remove('active'); }
+
+        async function sendMessage() {
+            const email = (document.getElementById('msgEmail').value || '').trim();
+            const text = (document.getElementById('msgText').value || '').trim();
+            if (text.length < 3) {
+                alert(isEn() ? 'Please write a message' : 'اكتب رسالة من فضلك'); return;
+            }
+            try {
+                const r = await fetch(SUPABASE_URL + '/rest/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({ email: email, message: text, status: 'new' })
+                });
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                document.getElementById('msgText').value = '';
+                document.getElementById('msgOk').style.display = 'block';
+                setTimeout(() => { closeContact(); document.getElementById('msgOk').style.display = 'none'; }, 1800);
+            } catch (e) {
+                alert(isEn() ? 'Could not send. Try again.' : 'تعذر الإرسال. حاول مجدداً.');
+            }
         }
 
         function adminLogin() {
@@ -1115,6 +1153,29 @@ _____________
 
         renderPrompts();
     </script>
+
+    <!-- نافذة مراسلتنا -->
+    <div class="modal-overlay" id="contactModal">
+        <div class="modal">
+            <button type="button" class="modal-close" onclick="closeContact()">×</button>
+            <h2>
+                <span class="ar">💬 راسلنا</span>
+                <span class="en">💬 Contact Us</span>
+            </h2>
+            <label style="margin-top:0.8rem"><span class="ar">إيميلك (اختياري)</span><span class="en">Your email (optional)</span></label>
+            <input type="email" id="msgEmail" placeholder="email@example.com">
+            <label style="margin-top:0.7rem"><span class="ar">رسالتك</span><span class="en">Your message</span></label>
+            <textarea id="msgText" rows="4" style="width:100%;padding:0.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:#0f0f0f;color:var(--text);font-family:'Cairo',sans-serif;font-size:0.95rem;outline:none;resize:vertical" placeholder="..."></textarea>
+            <button type="button" class="btn btn-gold" style="width:100%;margin-top:1rem" onclick="sendMessage()">
+                <span class="ar">📨 إرسال</span><span class="en">📨 Send</span>
+            </button>
+            <div class="msg ok" id="msgOk" style="display:none;margin-top:0.8rem;border-radius:10px;padding:0.7rem;background:rgba(46,125,50,0.15);color:#7ddb85;font-weight:700;text-align:center">
+                <span class="ar">✅ تم إرسال رسالتك! سنرد عليك قريباً.</span>
+                <span class="en">✅ Message sent! We will reply soon.</span>
+            </div>
+        </div>
+    </div>
+
     <!-- شاشة متابعة الدفع المدمجة -->
     <div class="pay-wait" id="payWait">
         <div class="pay-wait-card">

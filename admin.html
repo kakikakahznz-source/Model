@@ -70,6 +70,11 @@ small{color:var(--muted)}
     </div>
 
     <div class="card">
+        <h3 style="color:var(--gold)">💬 رسائل المستخدمين <button style="width:auto;padding:0.3rem 1rem;font-size:0.8rem;margin:0;float:left" onclick="loadMessages()">🔄 تحديث</button></h3>
+        <div id="msgList"><small>اضغط تحديث لعرض الرسائل</small></div>
+    </div>
+
+    <div class="card">
         <h3 style="color:var(--gold)">📋 المشتركون <button style="width:auto;padding:0.3rem 1rem;font-size:0.8rem;margin:0;float:left" onclick="loadSubs()">🔄 تحديث</button></h3>
         <div id="subsList"><small>اضغط تحديث لعرض القائمة</small></div>
     </div>
@@ -87,6 +92,7 @@ function unlock(){
         document.getElementById('panel').style.display='block';
         loadSubs();
         loadClaims();
+        loadMessages();
     } else {
         document.getElementById('gateMsg').style.display='block';
     }
@@ -147,6 +153,38 @@ async function approve(id){
         const ok = await r.json();
         if(ok===true){ alert('✅ تم التفعيل! سيُفعَّل جهاز العميل تلقائياً.'); loadClaims(); loadSubs(); }
         else alert('❌ فشل التأكيد');
+    }catch(e){ alert('❌ خطأ: '+e.message); }
+}
+
+async function loadMessages(){
+    const r = await fetch(SUPABASE_URL + '/rest/v1/messages?select=id,email,message,status,created_at&order=created_at.desc&limit=50', {
+        headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}
+    });
+    const rows = await r.json();
+    const box = document.getElementById('msgList');
+    if(!Array.isArray(rows) || !rows.length){ box.innerHTML='<small>📭 لا توجد رسائل</small>'; return; }
+    let h = '';
+    rows.forEach(m=>{
+        h += '<div style="border:1px solid var(--border);border-radius:10px;padding:0.7rem;margin-top:0.6rem">'
+           + '<div style="display:flex;justify-content:space-between;align-items:center">'
+           + '<b style="color:var(--gold);font-size:0.85rem">'+(m.email||'زائر')+'</b>'
+           + '<span class="badge '+(m.status==='new'?'on':'off')+'">'+(m.status==='new'?'جديدة':'مقروءة')+'</span></div>'
+           + '<div style="font-size:0.85rem;margin-top:0.4rem;line-height:1.5">'+(m.message||'')+'</div>'
+           + (m.status==='new' ? '<button style="width:auto;padding:0.25rem 0.8rem;font-size:0.75rem;margin:0.4rem 0 0" onclick="markRead(\''+m.id+'\')">✓ تمت القراءة</button>' : '')
+           + '</div>';
+    });
+    box.innerHTML = h;
+}
+
+async function markRead(id){
+    try{
+        const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/mark_message_read', {
+            method:'POST',
+            headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'},
+            body:JSON.stringify({p_id:id, p_code:ADMIN_CODE})
+        });
+        const ok = await r.json();
+        if(ok===true) loadMessages(); else alert('❌ فشل');
     }catch(e){ alert('❌ خطأ: '+e.message); }
 }
 
