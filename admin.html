@@ -64,6 +64,12 @@ small{color:var(--muted)}
     </div>
 
     <div class="card">
+        <h3 style="color:var(--gold)">⏳ طلبات التفعيل المعلقة <button style="width:auto;padding:0.3rem 1rem;font-size:0.8rem;margin:0;float:left" onclick="loadClaims()">🔄 تحديث</button></h3>
+        <small>تحقق من رقم العملية في تطبيق بريدي موب ثم اضغط تأكيد</small>
+        <div id="claimsList"><small>اضغط تحديث لعرض الطلبات</small></div>
+    </div>
+
+    <div class="card">
         <h3 style="color:var(--gold)">📋 المشتركون <button style="width:auto;padding:0.3rem 1rem;font-size:0.8rem;margin:0;float:left" onclick="loadSubs()">🔄 تحديث</button></h3>
         <div id="subsList"><small>اضغط تحديث لعرض القائمة</small></div>
     </div>
@@ -80,6 +86,7 @@ function unlock(){
         document.getElementById('gate').style.display='none';
         document.getElementById('panel').style.display='block';
         loadSubs();
+        loadClaims();
     } else {
         document.getElementById('gateMsg').style.display='block';
     }
@@ -112,6 +119,35 @@ async function activate(){
         document.getElementById('aEmail').value=''; document.getElementById('aOrder').value='';
         loadSubs();
     }catch(e){ msg.className='msg err'; msg.textContent='❌ خطأ: ' + e.message; }
+}
+
+async function loadClaims(){
+    const r = await fetch(SUPABASE_URL + '/rest/v1/payment_claims?select=id,email,tx_ref,created_at&status=eq.pending&order=created_at.desc', {
+        headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}
+    });
+    const rows = await r.json();
+    const box = document.getElementById('claimsList');
+    if(!Array.isArray(rows) || !rows.length){ box.innerHTML='<small style="color:#7ddb85">✅ لا توجد طلبات معلقة</small>'; return; }
+    let h = '<table><tr><th>الإيميل</th><th>رقم العملية</th><th></th></tr>';
+    rows.forEach(c=>{
+        h += '<tr><td>'+(c.email||'')+'</td><td style="direction:ltr;text-align:left">'+(c.tx_ref||'')+'</td>'
+           + '<td><button style="width:auto;padding:0.3rem 0.8rem;font-size:0.8rem;margin:0;background:linear-gradient(135deg,#43a047,#2e7d32)" onclick="approve(\''+c.id+'\')">✅ تأكيد</button></td></tr>';
+    });
+    box.innerHTML = h + '</table>';
+}
+
+async function approve(id){
+    if(!confirm('تأكيد استلام 3500 د.ج وتفعيل هذا المشترك؟')) return;
+    try{
+        const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/approve_claim', {
+            method:'POST',
+            headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'},
+            body:JSON.stringify({p_id:id, p_code:ADMIN_CODE})
+        });
+        const ok = await r.json();
+        if(ok===true){ alert('✅ تم التفعيل! سيُفعَّل جهاز العميل تلقائياً.'); loadClaims(); loadSubs(); }
+        else alert('❌ فشل التأكيد');
+    }catch(e){ alert('❌ خطأ: '+e.message); }
 }
 
 async function loadSubs(){
