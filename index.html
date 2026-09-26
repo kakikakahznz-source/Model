@@ -548,19 +548,9 @@
             </div>
 
             <div class="pay-methods" style="flex-wrap:wrap">
-                <button type="button" class="pay-method active" id="payGold" onclick="setPayMethod('gold')">
-                    <span class="pm-icon">💳</span>
-                    <span class="pm-name"><span class="ar">البطاقة الذهبية</span><span class="en">Gold Card</span></span>
-                    <span class="pm-price">3500 <span class="ar">د.ج</span><span class="en">DZD</span></span>
-                </button>
-                <button type="button" class="pay-method" id="payBaridi" onclick="setPayMethod('baridi')">
-                    <span class="pm-icon">📱</span>
-                    <span class="pm-name"><span class="ar">بريدي موب</span><span class="en">BaridiMob</span></span>
-                    <span class="pm-price">3500 <span class="ar">د.ج</span><span class="en">DZD</span></span>
-                </button>
-                <button type="button" class="pay-method" id="payTransfer" onclick="setPayMethod('transfer')">
+                <button type="button" class="pay-method active" id="payTransfer" onclick="setPayMethod('transfer')">
                     <span class="pm-icon">📲</span>
-                    <span class="pm-name"><span class="ar">تحويل مباشر</span><span class="en">Direct Transfer</span></span>
+                    <span class="pm-name"><span class="ar">بريدي موب / تحويل مباشر</span><span class="en">BaridiMob / Direct Transfer</span></span>
                     <span class="pm-price">3500 <span class="ar">د.ج</span><span class="en">DZD</span></span>
                 </button>
                 <button type="button" class="pay-method" id="payCard" onclick="setPayMethod('card')">
@@ -599,17 +589,6 @@
             </div>
 
             <!-- In-site Golden Card payment form -->
-            <div class="gold-form show" id="goldForm">
-                <div class="gold-note" style="margin-top:1rem">
-                    <span class="ar">💳 ستُنقل إلى صفحة <b>Chargily</b> الآمنة لإتمام الدفع بالبطاقة الذهبية (الذهبية/EDAHABIA أو CIB).</span>
-                    <span class="en">💳 You will be redirected to secure <b>Chargily</b> checkout to pay with your gold card (EDAHABIA or CIB).</span>
-                </div>
-                <div class="gold-note">
-                    <span class="ar">🔒 الدفع مشفّر بالكامل — يتم التفعيل التلقائي فور نجاح الدفع.</span>
-                    <span class="en">🔒 Fully encrypted — auto-activated on successful payment.</span>
-                </div>
-            </div>
-
             <button type="button" class="btn btn-gold" style="width:100%;margin-top:1.2rem" onclick="submitPayment(this)">
                 <span class="ar">تأكيد الاشتراك</span>
                 <span class="en">Confirm Subscription</span>
@@ -636,13 +615,8 @@
         const CCP_NUMBER = '0025148966/05';   // رقم CCP لاستقبال التحويلات
         const CCP_HOLDER = 'عارضتي';           // اسم صاحب الحساب
         const WHATSAPP_NUMBER = '';            // مثال: '213550123456' — لزر واتساب في صفحة التحويل // ⚠️ غيّر رمز الإدارة (نفس القيمة في admin.html)
-        const CHARGILY_PUBLIC_KEY = 'test_pk_Qb0d6yzTPxEae09n5mufnK1KSx8g8YLCCmcYGg55'; // Chargily Public Key
-        const CHARGILY_SECRET_KEY = 'test_sk_6mymr0D6fzv8Mu2Ix3NwN9mfCBj7n3YGBygUgswa'; // Chargily Secret (test)
-        const CHARGILY_MODE = 'test'; // 'test' للتجربة ← غيّرها إلى 'live' عند الإطلاق
         const SUPABASE_URL = 'https://mkgsewcvfftilcdatgqg.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_sSZbTaNKIwMEzhPQhPnE3g_Xj-xsNZP'; // Publishable (آمن للعرض)
-        // اختياري: ضع رابط الدفع الجاهز إن أردت استخدامه بدلاً من API
-        const CHARGILY_PAYMENT_LINK = 'https://pay.chargily.com/test/payment-links/01m3dmedwmktdd21598f9p274b'; // رابط الدفع الجاهز من Chargily
         // =======================================================
         const bodyTypes = [
             { id: 'slim', ar: 'نحيفة', en: 'Slim' },
@@ -773,169 +747,19 @@ _____________
             document.getElementById('subscribeModal').classList.remove('active');
         }
 
-        let goldFormOriginal = '';
         function setPayMethod(m) {
-            if (!goldFormOriginal) goldFormOriginal = document.getElementById('goldForm').innerHTML;
             payMethod = m;
-            document.getElementById('payGold').classList.toggle('active', m === 'gold');
-            document.getElementById('payCard').classList.toggle('active', m === 'card');
-            document.getElementById('goldForm').classList.toggle('show', m === 'gold' || m === 'baridi');
-            document.getElementById('transferForm').classList.toggle('show', m === 'transfer');
-            document.getElementById('payTransfer').classList.toggle('active', m === 'transfer');
-            if (m === 'transfer' && WHATSAPP_NUMBER) document.getElementById('waBtn').style.display = 'block';
-            const goldNote = document.querySelector('#goldForm .gold-note span');
-            if (m === 'baridi') {
-                document.getElementById('goldForm').innerHTML = '<div class="gold-note" style="margin-top:1rem">' +
-                    '<span class="ar">📱 ستُنقل إلى صفحة <b>Chargily</b> — اختر <b>EDAHABIA</b> ثم أكد الدفع من تطبيق <b>بريدي موب</b> على هاتفك.</span>' +
-                    '<span class="en">📱 You will go to <b>Chargily</b> — choose <b>EDAHABIA</b> and confirm payment in the <b>BaridiMob</b> app.</span></div>' +
-                    '<div class="gold-note"><span class="ar">🔒 التفعيل التلقائي خلال دقائق بعد تأكيد الدفع في التطبيق.</span>' +
-                    '<span class="en">🔒 Auto-activation within minutes after confirming in the app.</span></div>';
-            } else {
-                document.getElementById('goldForm').innerHTML = goldFormOriginal;
-            }
-            document.getElementById('paypalBox').style.display = m === 'card' ? 'block' : 'none';
+            const t = document.getElementById('payTransfer');
+            const c = document.getElementById('payCard');
+            if (t) t.classList.toggle('active', m === 'transfer');
+            if (c) c.classList.toggle('active', m === 'card');
+            const tf = document.getElementById('transferForm');
+            if (tf) tf.classList.toggle('show', m === 'transfer');
+            const pb = document.getElementById('paypalBox');
+            if (pb) pb.style.display = m === 'card' ? 'block' : 'none';
+            const wa = document.getElementById('waBtn');
+            if (wa && m === 'transfer') wa.style.display = WHATSAPP_NUMBER ? 'block' : 'none';
             if (m === 'card') renderPayPal();
-        }
-
-        function formatCardNum(el) {
-            el.value = el.value.replace(/[^0-9]/g, '').replace(/(.{4})/g, '$1 ').trim().slice(0, 19);
-        }
-
-        function formatCardExp(el) {
-            let v = el.value.replace(/[^0-9]/g, '').slice(0, 4);
-            if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2);
-            el.value = v;
-        }
-
-
-
-        // ============ Supabase: التفعيل المركزي ============
-        async function sbRpc(fnName, params) {
-            const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/' + fnName, {
-                method: 'POST',
-                headers: {
-                    'apikey': SUPABASE_ANON_KEY,
-                    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(params)
-            });
-            if (!res.ok) throw new Error(fnName + ' HTTP ' + res.status);
-            return res.json();
-        }
-
-        async function sbRegister(user) {
-            try {
-                await sbRpc('register_subscriber', {
-                    p_email: user.email, p_name: user.name || '',
-                    p_phone: user.phone || '', p_method: user.method || '',
-                    p_amount: user.amount || '', p_order_id: user.orderId || ''
-                });
-            } catch (e) { console.warn('Supabase register:', e); }
-        }
-
-        async function sbCheck(email) {
-            try {
-                const r = await sbRpc('check_subscription', { p_email: email });
-                return r === true;
-            } catch (e) { console.warn('Supabase check:', e); return null; }
-        }
-
-        // التحقق المركزي عند فتح الموقع: الاشتراك يتبع الإيميل وليس الجهاز
-        async function verifyCentral() {
-            const saved = localStorage.getItem('mymodel_user');
-            if (!saved) return;
-            let user; try { user = JSON.parse(saved); } catch { return; }
-            if (!user.email) return;
-            const active = await sbCheck(user.email);
-            if (active === true) {
-                localStorage.setItem('mymodel_paid', '1');
-                updatePaidUI();
-            } else if (active === false) {
-                localStorage.removeItem('mymodel_paid');
-                updatePaidUI();
-            }
-        }
-
-        // دخول بالإيميل من أي جهاز جديد
-        async function loginWithEmail() {
-            let savedEmail = '';
-            try { savedEmail = (JSON.parse(localStorage.getItem('mymodel_user') || '{}')).email || ''; } catch {}
-            const email = prompt(isEn()
-                ? 'Enter your subscription email to activate on this device:'
-                : 'أدخل إيميل اشتراكك لتفعيله على هذا الجهاز:', savedEmail);
-            if (!email) return;
-            document.getElementById('status').textContent = isEn() ? 'Checking subscription...' : 'جاري التحقق من الاشتراك...';
-            const active = await sbCheck(email.trim());
-            if (active === true) {
-                localStorage.setItem('mymodel_paid', '1');
-                localStorage.setItem('mymodel_user', JSON.stringify({ email: email.trim(), method: 'email-login' }));
-                updatePaidUI();
-                document.getElementById('status').textContent = isEn()
-                    ? '✅ Subscription found! Activated on this device.'
-                    : '✅ تم العثور على اشتراكك! تم التفعيل على هذا الجهاز.';
-            } else {
-                document.getElementById('status').textContent = isEn()
-                    ? '❌ No active subscription for this email yet. If you just paid, please wait a few minutes for activation.'
-                    : '❌ لا يوجد اشتراك فعّال بهذا الإيميل بعد. إذا دفعت للتو، انتظر دقائق حتى يتم التفعيل.';
-            }
-        }
-        // ==================================================
-
-        let paypalRendered = false;
-        function renderPayPal() {
-            if (window.paypal) { if (!paypalRendered) mountPayPal(); return; }
-            const s = document.createElement('script');
-            s.src = 'https://www.paypal.com/sdk/js?client-id=' + PAYPAL_CLIENT_ID +
-                    '&currency=USD&intent=capture&components=buttons';
-            s.onload = () => { paypalRendered = true; mountPayPal(); };
-            s.onerror = () => {
-                document.getElementById('paypal-button-container').innerHTML =
-                    '<div style="color:#ff8a80;font-size:0.85rem;text-align:center">' +
-                    (isEn() ? 'PayPal failed to load. Check your connection or Client ID.' : 'تعذر تحميل PayPal. تحقق من الاتصال أو Client ID.') + '</div>';
-            };
-            document.head.appendChild(s);
-        }
-
-        function mountPayPal() {
-            const box = document.getElementById('paypal-button-container');
-            if (!box || box.dataset.mounted === '1') return;
-            box.dataset.mounted = '1';
-            window.paypal.Buttons({
-                style: { layout: 'vertical', color: 'gold', shape: 'pill', label: 'pay' },
-                createOrder: (data, actions) => actions.order.create({
-                    purchase_units: [{
-                        description: 'MyModel Subscription - 1 month',
-                        custom_id: 'mymodel-sub',
-                        amount: { value: PRICE_USD, currency_code: 'USD' }
-                    }]
-                }),
-                onApprove: (data, actions) => actions.order.capture().then(details => {
-                    const payer = details.payer || {};
-                    const pName = payer.name ? (payer.name.given_name + ' ' + (payer.name.surname || '')) : '';
-                    activateSubscription({
-                        name: pName,
-                        email: payer.email_address || '',
-                        phone: '',
-                        method: 'paypal',
-                        amount: PRICE_USD + ' USD',
-                        orderId: details.id
-                    });
-                }),
-                onError: () => {
-                    alert(isEn() ? 'Payment error. Please try again.' : 'حدث خطأ في الدفع. حاول مجدداً.');
-                }
-            }).render('#paypal-button-container');
-        }
-
-        function adminLogin() {
-            const code = prompt(isEn() ? 'Admin access code:' : 'أدخل رمز الدخول الإداري:');
-            if (code === null) return;
-            if (code === ADMIN_CODE) {
-                window.open('admin.html', '_blank');
-            } else if (code !== '') {
-                alert(isEn() ? 'Wrong code' : 'رمز خاطئ');
-            }
         }
 
         // ===== نظام رقم العملية: إرسال الطلب + فحص تلقائي =====
@@ -1042,61 +866,6 @@ _____________
                     alert(isEn() ? 'Enter the transaction reference from your BaridiMob receipt' : 'أدخل رقم العملية من وصل بريدي موب'); return;
                 }
                 submitClaim(cEmail, cRef, btn);
-                return;
-            }
-
-            // Chargily — الدفع الحقيقي بالبطاقة الذهبية أو بريدي موب (3500 د.ج) عبر صفحة Chargily الآمنة
-            if (payMethod === 'gold' || payMethod === 'baridi') {
-                const backUrl = window.location.origin + window.location.pathname + '?paid=1&method=chargily';
-                const failUrl = window.location.href;
-
-                // الخيار 1: رابط الدفع الجاهز — يفتح في تبويب جديد مع تعليمات التفعيل
-                if (CHARGILY_PAYMENT_LINK) {
-                    localStorage.setItem('mymodel_pending', JSON.stringify({ name, email, phone, method: payMethod }));
-                    window.open(CHARGILY_PAYMENT_LINK, '_blank');
-                    closeSubscribe();
-                    openPayWait(); // شاشة المتابعة المدمجة داخل الموقع
-                    return;
-                }
-
-                // الخيار 2: إنشاء جلسة دفع عبر API
-                const originalHtml = btn.innerHTML;
-                btn.disabled = true;
-                btn.innerHTML = (isEn() ? 'Connecting to Chargily...' : 'جاري الاتصال بـ Chargily...') + '<span class="spinner"></span>';
-
-                fetch('https://pay.chargily.net/api/v2/checkouts', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + CHARGILY_SECRET_KEY,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        amount: PRICE_GOLD_DZD,
-                        currency: 'DZD',
-                        success_url: backUrl,
-                        failure_url: failUrl,
-                        payment_method: ['edahabia', 'cib'],
-                        description: 'MyModel Subscription - 1 month',
-                        metadata: { name, email, phone, plan: 'monthly' }
-                    })
-                })
-                .then(r => {
-                    if (!r.ok) throw new Error('HTTP ' + r.status);
-                    return r.json();
-                })
-                .then(data => {
-                    localStorage.setItem('mymodel_pending', JSON.stringify({ name, email, phone, method: 'chargily' }));
-                    closeSubscribe();
-                    document.getElementById('status').textContent = isEn() ? 'Redirecting to Chargily...' : 'جاري التحويل إلى Chargily...';
-                    window.location.href = data.checkout_url;
-                })
-                .catch(err => {
-                    btn.disabled = false;
-                    btn.innerHTML = originalHtml;
-                    alert(isEn()
-                        ? 'Could not connect to Chargily. Try again or use the payment link option.'
-                        : 'تعذر الاتصال بـ Chargily. حاول مجدداً أو استخدم خيار رابط الدفع.');
-                });
                 return;
             }
 
