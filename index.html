@@ -435,6 +435,11 @@
         }
         .pay-big-btn:active { transform: scale(0.98); }
         .pay-methods .pay-method span { display: block; line-height: 1.4; }
+        .pay-method { padding: 0.9rem 0.5rem; line-height: 1.35; }
+        .pay-method .pm-icon { display: block; font-size: 1.9rem; margin-bottom: 0.35rem; }
+        .pay-method .pm-name { display: block; font-weight: 700; font-size: 0.85rem; }
+        .pay-method .pm-price { display: block; font-size: 0.72rem; opacity: 0.75; margin-top: 0.15rem; }
+
 
         footer {
             text-align: center; padding: 1.8rem; color: var(--muted);
@@ -544,16 +549,24 @@
 
             <div class="pay-methods" style="flex-wrap:wrap">
                 <button type="button" class="pay-method active" id="payGold" onclick="setPayMethod('gold')">
-                    <span class="ar">💳 البطاقة الذهبية — 3500 د.ج</span><span class="en">💳 Gold Card — 3500 DZD</span>
+                    <span class="pm-icon">💳</span>
+                    <span class="pm-name"><span class="ar">البطاقة الذهبية</span><span class="en">Gold Card</span></span>
+                    <span class="pm-price">3500 <span class="ar">د.ج</span><span class="en">DZD</span></span>
                 </button>
                 <button type="button" class="pay-method" id="payBaridi" onclick="setPayMethod('baridi')">
-                    <span class="ar">📱 بريدي موب — 3500 د.ج</span><span class="en">📱 BaridiMob — 3500 DZD</span>
+                    <span class="pm-icon">📱</span>
+                    <span class="pm-name"><span class="ar">بريدي موب</span><span class="en">BaridiMob</span></span>
+                    <span class="pm-price">3500 <span class="ar">د.ج</span><span class="en">DZD</span></span>
                 </button>
                 <button type="button" class="pay-method" id="payTransfer" onclick="setPayMethod('transfer')">
-                    <span class="ar">📲 تحويل مباشر — 3500 د.ج</span><span class="en">📲 Direct transfer — 3500 DZD</span>
+                    <span class="pm-icon">📲</span>
+                    <span class="pm-name"><span class="ar">تحويل مباشر</span><span class="en">Direct Transfer</span></span>
+                    <span class="pm-price">3500 <span class="ar">د.ج</span><span class="en">DZD</span></span>
                 </button>
                 <button type="button" class="pay-method" id="payCard" onclick="setPayMethod('card')">
-                    PayPal — $15
+                    <span class="pm-icon">🅿️</span>
+                    <span class="pm-name">PayPal</span>
+                    <span class="pm-price">15 USD</span>
                 </button>
             </div>
 
