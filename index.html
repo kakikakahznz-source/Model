@@ -515,8 +515,8 @@
             <span class="en">📧 I have a subscription — activate by email</span>
         </button>
         <button type="button" class="btn btn-subscribe" onclick="openSubscribe()" id="btnSubscribe">
-            <span class="ar">⭐ اشترك الآن — 15$ / شهر</span>
-            <span class="en">⭐ Subscribe Now — $15 / mo</span>
+            <span class="ar">⭐ اشترك الآن — 15$ / سنة</span>
+            <span class="en">⭐ Subscribe Now — $15 / year</span>
         </button>
         <button type="button" class="btn btn-gold" onclick="copyPrompt('video')">
             <span class="ar">📋 نسخ برومبت الفيديو</span>
@@ -541,8 +541,8 @@
                 <span class="ar">اشتراك عارضتي</span>
                 <span class="en">MyModel Subscription</span>
             </h2>
-            <div class="price">15 <span>$ / <span class="ar">شهر</span><span class="en">mo</span></span></div>
-            <div style="text-align:center"><span class="price-badge"><span class="ar">💳 البطاقة الذهبية: 3500 د.ج</span><span class="en">💳 Gold Card: 3500 DZD</span></span></div>
+            <div class="price">15 <span>$ / <span class="ar">سنة كاملة</span><span class="en">year</span></span></div>
+            <div style="text-align:center"><span class="price-badge"><span class="ar">💳 بريدي موب: 3500 د.ج / سنة</span><span class="en">💳 BaridiMob: 3500 DZD / year</span></span></div>
             <ul class="features">
                 <li>✓ <span class="ar">نسخ كل البرومبتات</span><span class="en">Copy all prompts</span></li>
                 <li>✓ <span class="ar">فتح التطبيق مباشرة</span><span class="en">Open the app directly</span></li>
@@ -957,7 +957,7 @@ _____________
                 style: { layout: 'vertical', color: 'gold', shape: 'pill', label: 'pay' },
                 createOrder: (data, actions) => actions.order.create({
                     purchase_units: [{
-                        description: 'MyModel Subscription - 1 month',
+                        description: 'MyModel Subscription - 1 year',
                         custom_id: 'mymodel-sub',
                         amount: { value: PRICE_USD, currency_code: 'USD' }
                     }]
