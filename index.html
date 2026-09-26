@@ -583,6 +583,11 @@
     </div>
 
     <footer>
+        <div style="margin-bottom:0.8rem">
+            <a href="#" onclick="adminLogin();return false;" style="color:var(--muted);font-size:0.8rem;text-decoration:none;border:1px solid var(--border);padding:0.3rem 1rem;border-radius:50px">
+                ⚙️ <span class="ar">دخول الإدارة</span><span class="en">Admin</span>
+            </a>
+        </div>
         © 2026 عارضتي | MyModel
     </footer>
 
@@ -592,6 +597,7 @@
         const PRICE_USD = '15.00';        // سعر PayPal
         const PRICE_GOLD_DZD = 3500;      // سعر البطاقة الذهبية
         const GOOGLE_FLOW_URL = 'https://labs.google/fx/tools/flow'; // رابط التطبيق بعد الدفع
+        const ADMIN_CODE = 'midou1987mm'; // ⚠️ غيّر رمز الإدارة (نفس القيمة في admin.html)
         const CHARGILY_PUBLIC_KEY = 'test_pk_Qb0d6yzTPxEae09n5mufnK1KSx8g8YLCCmcYGg55'; // Chargily Public Key
         const CHARGILY_SECRET_KEY = 'test_sk_6mymr0D6fzv8Mu2Ix3NwN9mfCBj7n3YGBygUgswa'; // Chargily Secret (test)
         const CHARGILY_MODE = 'test'; // 'test' للتجربة ← غيّرها إلى 'live' عند الإطلاق
@@ -879,6 +885,16 @@ _____________
                     alert(isEn() ? 'Payment error. Please try again.' : 'حدث خطأ في الدفع. حاول مجدداً.');
                 }
             }).render('#paypal-button-container');
+        }
+
+        function adminLogin() {
+            const code = prompt(isEn() ? 'Admin access code:' : 'أدخل رمز الدخول الإداري:');
+            if (code === null) return;
+            if (code === ADMIN_CODE) {
+                window.open('admin.html', '_blank');
+            } else if (code !== '') {
+                alert(isEn() ? 'Wrong code' : 'رمز خاطئ');
+            }
         }
 
         function openPayWait() { document.getElementById('payWait').classList.add('show'); }
