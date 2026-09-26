@@ -376,6 +376,66 @@
         }
         .success-banner.show { display: block; }
 
+
+        .pay-wait {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10,10,10,0.96);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 1.2rem;
+        }
+        .pay-wait.show { display: flex; }
+        .pay-wait-card {
+            background: var(--card);
+            border: 1px solid var(--gold);
+            border-radius: 20px;
+            max-width: 420px;
+            width: 100%;
+            padding: 1.8rem;
+            text-align: center;
+        }
+        .pay-wait-card h2 { color: var(--gold); font-size: 1.25rem; margin-bottom: 1rem; }
+        .pay-steps { text-align: right; margin: 1rem 0 1.4rem; }
+        .pay-steps li {
+            list-style: none;
+            padding: 0.5rem 0;
+            color: var(--text);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .pay-steps .num {
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: var(--gold);
+            color: #0a0a0a;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+        }
+        .pay-big-btn {
+            width: 100%;
+            padding: 0.9rem;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: #0a0a0a;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 0.6rem;
+        }
+        .pay-big-btn:active { transform: scale(0.98); }
+        .pay-methods .pay-method span { display: block; line-height: 1.4; }
+
         footer {
             text-align: center; padding: 1.8rem; color: var(--muted);
             font-size: 0.85rem; border-top: 1px solid var(--border);
@@ -494,6 +554,9 @@
             <div class="pay-methods" style="flex-wrap:wrap">
                 <button type="button" class="pay-method active" id="payGold" onclick="setPayMethod('gold')">
                     <span class="ar">💳 البطاقة الذهبية — 3500 د.ج</span><span class="en">💳 Gold Card — 3500 DZD</span>
+                </button>
+                <button type="button" class="pay-method" id="payBaridi" onclick="setPayMethod('baridi')">
+                    <span class="ar">📱 بريدي موب — 3500 د.ج</span><span class="en">📱 BaridiMob — 3500 DZD</span>
                 </button>
                 <button type="button" class="pay-method" id="payCard" onclick="setPayMethod('card')">
                     PayPal — $15
@@ -645,7 +708,7 @@ _____________
             document.getElementById('status').textContent = '';
         }
 
-        let payMethod = 'gold';
+        let payMethod = 'card';
 
         function isPaid() {
             return localStorage.getItem('mymodel_paid') === '1';
@@ -667,6 +730,7 @@ _____________
         }
 
         function openSubscribe() {
+            setPayMethod('card');
             document.getElementById('subscribeModal').classList.add('active');
         }
 
@@ -674,11 +738,23 @@ _____________
             document.getElementById('subscribeModal').classList.remove('active');
         }
 
+        let goldFormOriginal = '';
         function setPayMethod(m) {
+            if (!goldFormOriginal) goldFormOriginal = document.getElementById('goldForm').innerHTML;
             payMethod = m;
             document.getElementById('payGold').classList.toggle('active', m === 'gold');
             document.getElementById('payCard').classList.toggle('active', m === 'card');
-            document.getElementById('goldForm').classList.toggle('show', m === 'gold');
+            document.getElementById('goldForm').classList.toggle('show', m === 'gold' || m === 'baridi');
+            const goldNote = document.querySelector('#goldForm .gold-note span');
+            if (m === 'baridi') {
+                document.getElementById('goldForm').innerHTML = '<div class="gold-note" style="margin-top:1rem">' +
+                    '<span class="ar">📱 ستُنقل إلى صفحة <b>Chargily</b> — اختر <b>EDAHABIA</b> ثم أكد الدفع من تطبيق <b>بريدي موب</b> على هاتفك.</span>' +
+                    '<span class="en">📱 You will go to <b>Chargily</b> — choose <b>EDAHABIA</b> and confirm payment in the <b>BaridiMob</b> app.</span></div>' +
+                    '<div class="gold-note"><span class="ar">🔒 التفعيل التلقائي خلال دقائق بعد تأكيد الدفع في التطبيق.</span>' +
+                    '<span class="en">🔒 Auto-activation within minutes after confirming in the app.</span></div>';
+            } else {
+                document.getElementById('goldForm').innerHTML = goldFormOriginal;
+            }
             document.getElementById('paypalBox').style.display = m === 'card' ? 'block' : 'none';
             if (m === 'card') renderPayPal();
         }
@@ -760,8 +836,8 @@ _____________
                     : '✅ تم العثور على اشتراكك! تم التفعيل على هذا الجهاز.';
             } else {
                 document.getElementById('status').textContent = isEn()
-                    ? '❌ No active subscription found for this email.'
-                    : '❌ لا يوجد اشتراك فعّال بهذا الإيميل.';
+                    ? '❌ No active subscription for this email yet. If you just paid, please wait a few minutes for activation.'
+                    : '❌ لا يوجد اشتراك فعّال بهذا الإيميل بعد. إذا دفعت للتو، انتظر دقائق حتى يتم التفعيل.';
             }
         }
         // ==================================================
@@ -812,6 +888,9 @@ _____________
             }).render('#paypal-button-container');
         }
 
+        function openPayWait() { document.getElementById('payWait').classList.add('show'); }
+        function closePayWait() { document.getElementById('payWait').classList.remove('show'); }
+
         // Automatic activation after successful payment
         function activateSubscription(userData) {
             localStorage.setItem('mymodel_paid', '1');
@@ -841,17 +920,17 @@ _____________
                 return;
             }
 
-            // Chargily — الدفع الحقيقي بالبطاقة الذهبية (3500 د.ج) عبر صفحة Chargily الآمنة
-            if (payMethod === 'gold') {
+            // Chargily — الدفع الحقيقي بالبطاقة الذهبية أو بريدي موب (3500 د.ج) عبر صفحة Chargily الآمنة
+            if (payMethod === 'gold' || payMethod === 'baridi') {
                 const backUrl = window.location.origin + window.location.pathname + '?paid=1&method=chargily';
                 const failUrl = window.location.href;
 
-                // الخيار 1: رابط الدفع الجاهز (الأكثر أماناً)
+                // الخيار 1: رابط الدفع الجاهز — يفتح في تبويب جديد مع تعليمات التفعيل
                 if (CHARGILY_PAYMENT_LINK) {
-                    localStorage.setItem('mymodel_pending', JSON.stringify({ name, email, phone, method: 'chargily' }));
+                    localStorage.setItem('mymodel_pending', JSON.stringify({ name, email, phone, method: payMethod }));
+                    window.open(CHARGILY_PAYMENT_LINK, '_blank');
                     closeSubscribe();
-                    document.getElementById('status').textContent = isEn() ? 'Redirecting to Chargily...' : 'جاري التحويل إلى Chargily...';
-                    window.location.href = CHARGILY_PAYMENT_LINK;
+                    openPayWait(); // شاشة المتابعة المدمجة داخل الموقع
                     return;
                 }
 
@@ -1015,5 +1094,27 @@ _____________
 
         renderPrompts();
     </script>
+    <!-- شاشة متابعة الدفع المدمجة -->
+    <div class="pay-wait" id="payWait">
+        <div class="pay-wait-card">
+            <h2>
+                <span class="ar">💳 أكمل الدفع الآن</span>
+                <span class="en">💳 Complete your payment</span>
+            </h2>
+            <ul class="pay-steps">
+                <li><span class="num">1</span><span class="ar">صفحة الدفع فُتحت في <b>تبويب جديد</b> — أكمل الدفع هناك (بريدي موب / البطاقة الذهبية)</span><span class="en">Payment page opened in a <b>new tab</b> — complete it there (BaridiMob / Gold Card)</span></li>
+                <li><span class="num">2</span><span class="ar">بعد نجاح الدفع، اضغط الزر بالأسفل وأدخل إيميلك</span><span class="en">After success, press the button below and enter your email</span></li>
+                <li><span class="num">3</span><span class="ar">يُفعَّل اشتراكك خلال دقائق تلقائياً ✨</span><span class="en">Your subscription activates within minutes ✨</span></li>
+            </ul>
+            <button type="button" class="pay-big-btn" onclick="closePayWait(); loginWithEmail();">
+                <span class="ar">✅ أكملت الدفع — فعّل اشتراكي</span>
+                <span class="en">✅ I paid — activate my subscription</span>
+            </button>
+            <button type="button" class="btn btn-outline" style="width:100%; margin-top:0.7rem" onclick="closePayWait()">
+                <span class="ar">إغلاق</span><span class="en">Close</span>
+            </button>
+        </div>
+    </div>
+
 </body>
 </html>
