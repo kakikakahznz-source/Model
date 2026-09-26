@@ -536,16 +536,7 @@
                 <li>✓ <span class="ar">دعم فني</span><span class="en">Support</span></li>
             </ul>
 
-            <label><span class="ar">الاسم</span><span class="en">Name</span></label>
-            <input type="text" id="payName" placeholder="...">
-
-            <label><span class="ar">البريد الإلكتروني</span><span class="en">Email</span></label>
-            <input type="email" id="payEmail" placeholder="email@example.com">
-
-            <label><span class="ar">رقم الهاتف</span><span class="en">Phone</span></label>
-            <input type="tel" id="payPhone" placeholder="+213 / +966...">
-
-            <label><span class="ar">طريقة الدفع</span><span class="en">Payment method</span></label>
+            <label><span class="ar">اختر طريقة الدفع</span><span class="en">Choose payment method</span></label>
             <div class="success-banner" id="paySuccess">
                 <span class="ar">✅ تم الدفع بنجاح! تم تفعيل اشتراكك تلقائياً.</span>
                 <span class="en">✅ Payment successful! Your subscription is now active.</span>
@@ -874,9 +865,9 @@ _____________
                     const payer = details.payer || {};
                     const pName = payer.name ? (payer.name.given_name + ' ' + (payer.name.surname || '')) : '';
                     activateSubscription({
-                        name: pName || document.getElementById('subName').value,
-                        email: payer.email_address || document.getElementById('subEmail').value,
-                        phone: document.getElementById('subPhone') ? document.getElementById('subPhone').value : '',
+                        name: pName,
+                        email: payer.email_address || '',
+                        phone: '',
                         method: 'paypal',
                         amount: PRICE_USD + ' USD',
                         orderId: details.id
@@ -893,6 +884,12 @@ _____________
 
         // Automatic activation after successful payment
         function activateSubscription(userData) {
+            if (!userData.email) {
+                const em = prompt(isEn()
+                    ? 'Enter your email to save your subscription (works on any device):'
+                    : 'أدخل إيميلك لحفظ اشتراكك (للتفعيل على أي جهاز):');
+                if (em && em.trim()) userData = Object.assign({}, userData, { email: em.trim() });
+            }
             localStorage.setItem('mymodel_paid', '1');
             localStorage.setItem('mymodel_user', JSON.stringify(userData));
             localStorage.removeItem('mymodel_pending');
@@ -911,14 +908,7 @@ _____________
         }
 
         function submitPayment(btn) {
-            const name = document.getElementById('payName').value.trim();
-            const email = document.getElementById('payEmail').value.trim();
-            const phone = document.getElementById('payPhone').value.trim();
-
-            if (!name || !email || !phone) {
-                alert(isEn() ? 'Please fill all fields' : 'يرجى تعبئة جميع الحقول');
-                return;
-            }
+            const name = '', email = '', phone = ''; // لا حقول إجبارية — الإيميل يُسأل بعد الدفع إن لزم
 
             // Chargily — الدفع الحقيقي بالبطاقة الذهبية أو بريدي موب (3500 د.ج) عبر صفحة Chargily الآمنة
             if (payMethod === 'gold' || payMethod === 'baridi') {
