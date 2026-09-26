@@ -549,8 +549,33 @@
                 <button type="button" class="pay-method" id="payBaridi" onclick="setPayMethod('baridi')">
                     <span class="ar">📱 بريدي موب — 3500 د.ج</span><span class="en">📱 BaridiMob — 3500 DZD</span>
                 </button>
+                <button type="button" class="pay-method" id="payTransfer" onclick="setPayMethod('transfer')">
+                    <span class="ar">📲 تحويل مباشر — 3500 د.ج</span><span class="en">📲 Direct transfer — 3500 DZD</span>
+                </button>
                 <button type="button" class="pay-method" id="payCard" onclick="setPayMethod('card')">
                     PayPal — $15
+                </button>
+            </div>
+
+            <!-- التحويل المباشر (CCP / بريدي موب) -->
+            <div class="gold-form" id="transferForm">
+                <div style="background:rgba(212,175,55,0.08);border:1px dashed var(--border);border-radius:12px;padding:1rem;margin-top:1rem;text-align:center">
+                    <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.3rem">
+                        <span class="ar">حوّل 3500 د.ج إلى حساب CCP:</span>
+                        <span class="en">Transfer 3500 DZD to CCP account:</span>
+                    </div>
+                    <div style="font-size:1.3rem;font-weight:800;color:var(--gold);letter-spacing:1px;direction:ltr">0025148966/05</div>
+                    <div style="font-size:0.85rem;color:var(--muted);margin-top:0.3rem">
+                        <span class="ar">باسم: عارضتي</span>
+                        <span class="en">Name: MyModel</span>
+                    </div>
+                </div>
+                <div class="gold-note">
+                    <span class="ar">📸 بعد التحويل من تطبيق بريدي موب، أرسل لقطة شاشة للإثبات عبر واتساب — سيُفعَّل اشتراكك خلال دقائق.</span>
+                    <span class="en">📸 After transferring via BaridiMob, send a screenshot as proof via WhatsApp — activated within minutes.</span>
+                </div>
+                <button type="button" class="pay-big-btn" id="waBtn" onclick="sendProof()" style="display:none">
+                    📱 <span class="ar">إرسال الإثبات عبر واتساب</span><span class="en">Send proof via WhatsApp</span>
                 </button>
             </div>
 
@@ -597,7 +622,10 @@
         const PRICE_USD = '15.00';        // سعر PayPal
         const PRICE_GOLD_DZD = 3500;      // سعر البطاقة الذهبية
         const GOOGLE_FLOW_URL = 'https://labs.google/fx/tools/flow'; // رابط التطبيق بعد الدفع
-        const ADMIN_CODE = 'midou1987mm'; // ⚠️ غيّر رمز الإدارة (نفس القيمة في admin.html)
+        const ADMIN_CODE = 'midou1987mm';
+        const CCP_NUMBER = '0025148966/05';   // رقم CCP لاستقبال التحويلات
+        const CCP_HOLDER = 'عارضتي';           // اسم صاحب الحساب
+        const WHATSAPP_NUMBER = '';            // مثال: '213550123456' — لزر واتساب في صفحة التحويل // ⚠️ غيّر رمز الإدارة (نفس القيمة في admin.html)
         const CHARGILY_PUBLIC_KEY = 'test_pk_Qb0d6yzTPxEae09n5mufnK1KSx8g8YLCCmcYGg55'; // Chargily Public Key
         const CHARGILY_SECRET_KEY = 'test_sk_6mymr0D6fzv8Mu2Ix3NwN9mfCBj7n3YGBygUgswa'; // Chargily Secret (test)
         const CHARGILY_MODE = 'test'; // 'test' للتجربة ← غيّرها إلى 'live' عند الإطلاق
@@ -742,6 +770,9 @@ _____________
             document.getElementById('payGold').classList.toggle('active', m === 'gold');
             document.getElementById('payCard').classList.toggle('active', m === 'card');
             document.getElementById('goldForm').classList.toggle('show', m === 'gold' || m === 'baridi');
+            document.getElementById('transferForm').classList.toggle('show', m === 'transfer');
+            document.getElementById('payTransfer').classList.toggle('active', m === 'transfer');
+            if (m === 'transfer' && WHATSAPP_NUMBER) document.getElementById('waBtn').style.display = 'block';
             const goldNote = document.querySelector('#goldForm .gold-note span');
             if (m === 'baridi') {
                 document.getElementById('goldForm').innerHTML = '<div class="gold-note" style="margin-top:1rem">' +
@@ -897,6 +928,13 @@ _____________
             }
         }
 
+        function sendProof() {
+            const msg = isEn()
+                ? 'Hello! I paid 3500 DZD for MyModel subscription via BaridiMob. CCP: ' + CCP_NUMBER
+                : 'مرحباً! دفعت 3500 د.ج لاشتراك عارضتي عبر بريدي موب. الحساب: ' + CCP_NUMBER;
+            window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg), '_blank');
+        }
+
         function openPayWait() { document.getElementById('payWait').classList.add('show'); }
         function closePayWait() { document.getElementById('payWait').classList.remove('show'); }
 
@@ -929,6 +967,14 @@ _____________
 
         function submitPayment(btn) {
             const name = '', email = '', phone = ''; // لا حقول إجبارية — الإيميل يُسأل بعد الدفع إن لزم
+
+            // التحويل المباشر — يدوي عبر بريدي موب/CCP
+            if (payMethod === 'transfer') {
+                localStorage.setItem('mymodel_pending', JSON.stringify({ name, email, phone, method: 'transfer' }));
+                closeSubscribe();
+                openPayWait();
+                return;
+            }
 
             // Chargily — الدفع الحقيقي بالبطاقة الذهبية أو بريدي موب (3500 د.ج) عبر صفحة Chargily الآمنة
             if (payMethod === 'gold' || payMethod === 'baridi') {
@@ -1112,7 +1158,7 @@ _____________
                 <span class="en">💳 Complete your payment</span>
             </h2>
             <ul class="pay-steps">
-                <li><span class="num">1</span><span class="ar">صفحة الدفع فُتحت في <b>تبويب جديد</b> — أكمل الدفع هناك (بريدي موب / البطاقة الذهبية)</span><span class="en">Payment page opened in a <b>new tab</b> — complete it there (BaridiMob / Gold Card)</span></li>
+                <li><span class="num">1</span><span class="ar">أكمل الدفع: تحويل بريدي موب إلى CCP <b>0025148966/05</b> (أو صفحة Chargily في التبويب الجديد)</span><span class="en">Payment page opened in a <b>new tab</b> — complete it there (BaridiMob / Gold Card)</span></li>
                 <li><span class="num">2</span><span class="ar">بعد نجاح الدفع، اضغط الزر بالأسفل وأدخل إيميلك</span><span class="en">After success, press the button below and enter your email</span></li>
                 <li><span class="num">3</span><span class="ar">يُفعَّل اشتراكك خلال دقائق تلقائياً ✨</span><span class="en">Your subscription activates within minutes ✨</span></li>
             </ul>
