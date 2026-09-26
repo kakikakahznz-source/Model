@@ -812,9 +812,11 @@ _____________
 
         // دخول بالإيميل من أي جهاز جديد
         async function loginWithEmail() {
+            let savedEmail = '';
+            try { savedEmail = (JSON.parse(localStorage.getItem('mymodel_user') || '{}')).email || ''; } catch {}
             const email = prompt(isEn()
                 ? 'Enter your subscription email to activate on this device:'
-                : 'أدخل إيميل اشتراكك لتفعيله على هذا الجهاز:');
+                : 'أدخل إيميل اشتراكك لتفعيله على هذا الجهاز:', savedEmail);
             if (!email) return;
             document.getElementById('status').textContent = isEn() ? 'Checking subscription...' : 'جاري التحقق من الاشتراك...';
             const active = await sbCheck(email.trim());
@@ -885,9 +887,11 @@ _____________
         // Automatic activation after successful payment
         function activateSubscription(userData) {
             if (!userData.email) {
+                let saved = '';
+                try { saved = (JSON.parse(localStorage.getItem('mymodel_user') || '{}')).email || ''; } catch {}
                 const em = prompt(isEn()
                     ? 'Enter your email to save your subscription (works on any device):'
-                    : 'أدخل إيميلك لحفظ اشتراكك (للتفعيل على أي جهاز):');
+                    : 'أدخل إيميلك لحفظ اشتراكك (للتفعيل على أي جهاز):', saved);
                 if (em && em.trim()) userData = Object.assign({}, userData, { email: em.trim() });
             }
             localStorage.setItem('mymodel_paid', '1');
