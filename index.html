@@ -611,6 +611,59 @@
         .studio-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; }
         .studio-btns .btn { flex: 1; min-width: 150px; padding: 0.6rem 0.8rem; font-size: 0.85rem; }
 
+
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 1.1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s;
+            margin-bottom: 0.7rem;
+        }
+        .upload-zone:hover { border-color: var(--gold); background: rgba(212,175,55,0.05); }
+        .upload-zone img { max-width: 100%; max-height: 180px; border-radius: 10px; display: block; margin: 0 auto 0.5rem; }
+        .upload-zone .uz-icon { font-size: 2rem; }
+        .upload-zone .uz-text { color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem; }
+        .studio-textarea {
+            width: 100%;
+            background: #0f0f0f;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.8rem 1rem;
+            color: var(--text);
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            min-height: 90px;
+            resize: vertical;
+            outline: none;
+            margin-bottom: 0.7rem;
+        }
+        .studio-textarea:focus { border-color: var(--gold); }
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.6rem;
+        }
+        .result-grid img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
+        .result-grid img:hover { border-color: var(--gold); }
+        .powered-by {
+            text-align: center;
+            margin-top: 1.2rem;
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+        .powered-by a { color: var(--gold); text-decoration: none; }
+
         footer {
             text-align: center; padding: 1.8rem; color: var(--muted);
             font-size: 0.85rem; border-top: 1px solid var(--border);
@@ -794,7 +847,10 @@
         const PAYPAL_CLIENT_ID = 'BAAfLmGRVCpE3Vj6kSTEy1UddEOwVqZREEUg_V7iThqyzDQj1aovwHiAF_koGm9hzS3a945hb4PrzMEQQY'; // PayPal Live Client ID
         const PRICE_USD = '15.00';        // سعر PayPal
         const PRICE_GOLD_DZD = 3500;      // سعر البطاقة الذهبية
-        const GOOGLE_FLOW_URL = 'https://labs.google/fx/tools/flow'; // رابط التطبيق بعد الدفع
+        const GOOGLE_FLOW_URL = 'https://labs.google/fx/tools/flow'; // بديل اختياري (يفتح في تبويب)
+        // 🔧 أداة الذكاء الاصطناعي المدمجة داخل الموقع (تضمين رسمي قانوني من Hugging Face)
+        // يمكنك استبدالها بأي Space يدعم التضمين من: huggingface.co/spaces
+        const AI_SPACE_URL = 'https://hf.space/embed/yisol/IDM-VTON';
         const ADMIN_CODE = 'midou1987mm';
         const CCP_NUMBER = '0025148966/05';   // رقم CCP لاستقبال التحويلات
         const CCP_HOLDER = 'عارضتي';           // اسم صاحب الحساب
@@ -1006,7 +1062,7 @@ _____________
         // ===== الاستوديو المدمج =====
         function openStudio() {
             const box = document.getElementById('studioPromptBox');
-            try { box.textContent = getImagePrompt(); } catch { box.textContent = '...'; }
+            try { box.value = getImagePrompt(); } catch { box.value = '...'; }
             document.getElementById('studioOverlay').classList.add('show');
             document.body.style.overflow = 'hidden';
         }
@@ -1014,8 +1070,50 @@ _____________
             document.getElementById('studioOverlay').classList.remove('show');
             document.body.style.overflow = '';
         }
+        let studioResults = [];
+
+        function studioPhoto(input) {
+            const f = input.files && input.files[0];
+            if (!f) return;
+            const url = URL.createObjectURL(f);
+            document.getElementById('photoZone').innerHTML =
+                '<img src="' + url + '">' +
+                '<div class="uz-text"><span class="ar">✓ تم رفع الصورة — جاهزة! اضغط للتغيير</span><span class="en">✓ Photo ready — tap to change</span></div>';
+        }
+
+        function studioResult(input) {
+            const f = input.files && input.files[0];
+            if (!f) return;
+            const url = URL.createObjectURL(f);
+            studioResults.push(url);
+            renderResults();
+        }
+
+        function renderResults() {
+            const g = document.getElementById('resultGrid');
+            g.innerHTML = studioResults.map(u =>
+                '<img src="' + u + '" onclick="window.open(\'' + u + '\',\'_blank\')">'
+            ).join('');
+        }
+
+        let aiFrameLoaded = false;
+        function loadAiFrame() {
+            if (aiFrameLoaded) return;
+            aiFrameLoaded = true;
+            document.getElementById('aiFrameBox').innerHTML =
+                '<iframe src="' + AI_SPACE_URL + '" style="width:100%;height:560px;border:none;display:block" allow="camera;clipboard-write"></iframe>';
+        }
+
         function studioCopyPrompt() {
-            copyPrompt('image');
+            const ta = document.getElementById('studioPromptBox');
+            const text = ta ? ta.value : '';
+            navigator.clipboard.writeText(text).then(() => {
+                ta.style.borderColor = '#2e7d32';
+                setTimeout(() => { ta.style.borderColor = ''; }, 1200);
+            }).catch(() => {
+                ta.select();
+                document.execCommand('copy');
+            });
         }
         // استقبال المستخدم عند عودته من تبويب Flow
         document.addEventListener('visibilitychange', () => {
@@ -1483,31 +1581,59 @@ _____________
             </div>
 
             <div class="studio-step">
-                <h3><span class="stepnum">1</span> <span class="ar">برومبتك الحالي</span><span class="en">Your current prompt</span></h3>
-                <div class="studio-prompt-box" id="studioPromptBox">...</div>
+                <h3><span class="stepnum">1</span> <span class="ar">📷 ارفع صورة الملابس</span><span class="en">📷 Upload clothing photo</span></h3>
+                <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="studioPhoto(this)">
+                <div class="upload-zone" id="photoZone" onclick="document.getElementById('photoInput').click()">
+                    <div class="uz-icon">📷</div>
+                    <div class="uz-text"><span class="ar">اضغط لرفع صورة قطعة الملابس من محلك</span><span class="en">Tap to upload your clothing photo</span></div>
+                </div>
+                <p class="studio-tip" style="margin-top:0"><span class="ar">🔒 الصورة تبقى في جهازك — لا تُرفع لأي خادم</span><span class="en">🔒 Photo stays on your device</span></p>
+            </div>
+
+            <div class="studio-step">
+                <h3><span class="stepnum">2</span> <span class="ar">✏️ أضف البرومبت</span><span class="en">✏️ Your prompt</span></h3>
+                <textarea class="studio-textarea" id="studioPromptBox"></textarea>
                 <button type="button" class="btn btn-outline" style="width:100%;padding:0.6rem" onclick="studioCopyPrompt()">
                     📋 <span class="ar">نسخ البرومبت</span><span class="en">Copy prompt</span>
                 </button>
             </div>
 
             <div class="studio-step">
-                <h3><span class="stepnum">2</span> <span class="ar">افتح أداة الذكاء الاصطناعي</span><span class="en">Open the AI tool</span></h3>
-                <button type="button" class="studio-launch" onclick="window.open(GOOGLE_FLOW_URL, '_blank')">
-                    🚀 <span class="ar">تشغيل Google Flow</span><span class="en">Launch Google Flow</span>
-                </button>
+                <h3><span class="stepnum">3</span> <span class="ar">⚡ ولّد الصورة — داخل الموقع مباشرة</span><span class="en">⚡ Generate — right here</span></h3>
+                <div id="aiFrameBox" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#0f0f0f">
+                    <button type="button" class="studio-launch" id="aiLoadBtn" onclick="loadAiFrame()">
+                        ⚡ <span class="ar">تحميل أداة الذكاء الاصطناعي</span><span class="en">Load AI tool</span>
+                    </button>
+                </div>
                 <p class="studio-tip">
-                    <span class="ar">💡 سيفتح في تبويب جديد — اترك هذه الصفحة مفتوحاً للعودة السريعة</span>
-                    <span class="en">💡 Opens in a new tab — keep this page open for a quick return</span>
+                    <span class="ar">📤 ارفع صورة الملابس وصورة العارضة داخل الأداة بالأسفل ثم اضغط Submit</span>
+                    <span class="en">📤 Upload garment + model photos below, then press Submit</span>
                 </p>
             </div>
 
             <div class="studio-step">
-                <h3><span class="stepnum">3</span> <span class="ar">برومبتات الفيديو السريعة</span><span class="en">Quick video prompts</span></h3>
+                <h3><span class="stepnum">4</span> <span class="ar">🖼️ النتيجة — ارفعها هنا</span><span class="en">🖼️ Result — upload it here</span></h3>
+                <input type="file" id="resultInput" accept="image/*" style="display:none" onchange="studioResult(this)">
+                <div class="upload-zone" onclick="document.getElementById('resultInput').click()">
+                    <div class="uz-icon">🖼️</div>
+                    <div class="uz-text"><span class="ar">اضغط لرفع النتيجة من Flow وحفظها في معرضك</span><span class="en">Tap to save your Flow result in the gallery</span></div>
+                </div>
+                <div class="result-grid" id="resultGrid"></div>
+            </div>
+
+            <div class="studio-step">
+                <h3>🎬 <span class="ar">برومبتات الفيديو السريعة</span><span class="en">Quick video prompts</span></h3>
                 <div class="studio-btns">
                     <button type="button" class="btn btn-gold" onclick="copyPrompt('video-hijab');">🧕 <span class="ar">فيديو محجبات</span><span class="en">Hijab video</span></button>
                     <button type="button" class="btn btn-gold" onclick="copyPrompt('video-free');">💃 <span class="ar">فيديو بدون حجاب</span><span class="en">No-hijab video</span></button>
                 </div>
             </div>
+
+            <p class="powered-by">
+                <span class="ar">⚡ أداة التوليد: نموذج مفتوح المصدر عبر Hugging Face — بديل متاح:</span>
+                <span class="en">⚡ Generation: open-source model via Hugging Face — alternative:</span>
+                <a href="https://labs.google/flow" target="_blank" rel="noopener">Google Flow</a>
+            </p>
 
             <button type="button" class="studio-back" onclick="closeStudio()">
                 <span class="ar">← رجوع للموقع</span><span class="en">← Back to site</span>
