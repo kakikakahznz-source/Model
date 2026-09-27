@@ -866,7 +866,8 @@
         const GOOGLE_FLOW_URL = 'https://labs.google/fx/tools/flow'; // بديل اختياري (يفتح في تبويب)
         // 🔧 أداة الذكاء الاصطناعي المدمجة داخل الموقع (تضمين رسمي قانوني من Hugging Face)
         // يمكنك استبدالها بأي Space يدعم التضمين من: huggingface.co/spaces
-        const AI_SPACE_URL = 'https://hf.space/embed/yisol/IDM-VTON';
+        const AI_SPACE_URL = 'https://hf.space/embed/Kwai-Kolors/Kolors-Virtual-Try-On';
+        const AI_SPACE_DIRECT = 'https://huggingface.co/spaces/Kwai-Kolors/Kolors-Virtual-Try-On';
         const ADMIN_CODE = 'midou1987mm';
         const CCP_NUMBER = '0025148966/05';   // رقم CCP لاستقبال التحويلات
         const CCP_HOLDER = 'عارضتي';           // اسم صاحب الحساب
@@ -1607,7 +1608,7 @@ _____________
                 <div class="studio-step" style="border-color:var(--gold)">
                     <h3>🖼️ <span class="ar">وضع الصورة — ارفع الصورتين داخل الأداة بالأسفل</span><span class="en">Image mode — upload both photos in the tool below</span></h3>
                     <div style="background:rgba(212,175,55,0.07);border-radius:10px;padding:0.7rem 1rem;font-size:0.85rem;margin-bottom:0.8rem;line-height:1.8">
-                        <span class="ar">① اضغط ⚡ تحميل الأداة &nbsp;&nbsp; ② <b>صورة الملابس</b> في خانة Garment &nbsp;&nbsp; ③ <b>صورة العارضة</b> في خانة Person &nbsp;&nbsp; ④ اضغط <b>Submit</b> &nbsp;&nbsp; ⑤ حمّل النتيجة من الأسفل</span>
+                        <span class="ar">① اضغط ⚡ تحميل الأداة &nbsp;&nbsp; ② <b>صورة العارضة</b> في خانة Person/Model &nbsp;&nbsp; ③ <b>صورة الملابس</b> في خانة Garment &nbsp;&nbsp; ④ اضغط <b>Submit</b> &nbsp;&nbsp; ⑤ حمّل النتيجة</span>
                         <span class="en">① Load tool &nbsp; ② Garment photo &nbsp; ③ Person photo &nbsp; ④ Submit &nbsp; ⑤ Download result</span>
                     </div>
                     <div id="aiFrameBox" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#0f0f0f">
@@ -1615,6 +1616,10 @@ _____________
                             ⚡ <span class="ar">تحميل أداة تغيير الملابس</span><span class="en">Load try-on tool</span>
                         </button>
                     </div>
+                    <p class="studio-tip" style="margin-top:0.4rem">
+                        <span class="ar">📤 ارفع الصورتين واضغط Submit — إن لم تظهر الأداة جرّب: </span>
+                        <a href="#" onclick="window.open(AI_SPACE_DIRECT, '_blank');return false;" style="color:var(--gold)">فتحها في تبويب ←</a>
+                    </p>
                 </div>
 
                 <!-- وضع الفيديو: البرومبت -->
