@@ -610,9 +610,13 @@
             <span class="ar">⭐ اشترك الآن — 15$ أو 3500 د.ج / سنة</span>
             <span class="en">⭐ Subscribe Now — $15 or 3500 DZD / year</span>
         </button>
-        <button type="button" class="btn btn-gold" onclick="copyPrompt('video')">
-            <span class="ar">📋 نسخ برومبت الفيديو</span>
-            <span class="en">📋 Copy Video Prompt</span>
+        <button type="button" class="btn btn-gold" onclick="copyPrompt('video-hijab')">
+            <span class="ar">📋 نسخ برومبت الفيديو — محجبات 🧕</span>
+            <span class="en">📋 Copy Video Prompt — Hijab 🧕</span>
+        </button>
+        <button type="button" class="btn btn-outline" onclick="copyPrompt('video-free')">
+            <span class="ar">📋 نسخ برومبت الفيديو — بدون حجاب 💃</span>
+            <span class="en">📋 Copy Video Prompt — No Hijab 💃</span>
         </button>
         <button type="button" class="btn btn-outline" onclick="openApp()">
             <span class="ar">🚀 افتح التطبيق</span>
@@ -744,8 +748,12 @@
 _____________
 حافظ على لون وتفاصيل الفستان بدقة`;
 
-        const videoPrompt = `فيديو بمونتاج احترافي العارضة تعرض الفستان للمحجبات بشكل واقعي انتقال سلس من لون الى لون بنفس الخلفية والارضية
-دون كلام و موسيقى شرقية`;
+        const videoPrompts = {
+            hijab: `فيديو بمونتاج احترافي العارضة تعرض الفستان للمحجبات بشكل واقعي انتقال سلس من لون الى لون بنفس الخلفية والارضية
+دون كلام و موسيقى شرقية`,
+            free: `فيديو بمونتاج احترافي العارضة تعرض الفستان بشكل واقعي انتقال سلس من لون الى لون بنفس الخلفية والارضية
+دون كلام و موسيقى شرقية`
+        };
 
         let selectedId = 'slim';
 
@@ -1251,9 +1259,11 @@ _____________
 
         function copyPrompt(type) {
             if (!requireAccount()) return;
-            const text = type === 'video' ? videoPrompt : getImagePrompt();
-            const name = type === 'video'
-                ? (isEn() ? 'Video' : 'الفيديو')
+            const text = (type === 'video-hijab') ? videoPrompts.hijab
+                       : (type === 'video-free') ? videoPrompts.free
+                       : getImagePrompt();
+            const name = (type === 'video-hijab') ? (isEn() ? 'Video (Hijab)' : 'الفيديو — محجبات')
+                       : (type === 'video-free') ? (isEn() ? 'Video (No Hijab)' : 'الفيديو — بدون حجاب')
                 : (isEn() ? bodyTypes.find(b => b.id === selectedId).en : bodyTypes.find(b => b.id === selectedId).ar);
             navigator.clipboard.writeText(text).then(() => {
                 document.getElementById('status').textContent = isEn()
