@@ -535,6 +535,82 @@
             font-size: 0.8rem;
         }
 
+
+        .studio-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at top, rgba(212,175,55,0.10) 0%, #0a0a0a 60%);
+            z-index: 1500;
+            overflow-y: auto;
+            padding: 2rem 1.2rem 3rem;
+        }
+        .studio-overlay.show { display: block; }
+        .studio-inner { max-width: 640px; margin: 0 auto; }
+        .studio-head { text-align: center; margin-bottom: 1.6rem; }
+        .studio-head h2 {
+            font-size: 1.7rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--gold-light), var(--gold));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .studio-step {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.2rem 1.3rem;
+            margin-bottom: 1rem;
+        }
+        .stepnum { width:24px;height:24px;border-radius:50%;background:var(--gold);color:#0a0a0a;display:inline-flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:800; }
+        .studio-step h3 { color: var(--gold); font-size: 1.02rem; margin-bottom: 0.6rem; display:flex; align-items:center; gap:0.5rem; }
+        .studio-prompt-box {
+            background: #0f0f0f;
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            padding: 0.8rem 1rem;
+            font-size: 0.85rem;
+            color: var(--text);
+            line-height: 1.6;
+            max-height: 110px;
+            overflow-y: auto;
+            margin-bottom: 0.7rem;
+            white-space: pre-wrap;
+        }
+        .studio-launch {
+            display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+            width: 100%;
+            padding: 1.05rem;
+            border-radius: 14px;
+            border: none;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: #0a0a0a;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 800;
+            font-size: 1.15rem;
+            cursor: pointer;
+            box-shadow: 0 6px 22px rgba(212,175,55,0.35);
+        }
+        .studio-launch:active { transform: scale(0.98); }
+        .studio-back {
+            display: block;
+            margin: 1.2rem auto 0;
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-decoration: underline;
+        }
+        .studio-tip {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.82rem;
+            margin-top: 0.8rem;
+        }
+        .studio-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+        .studio-btns .btn { flex: 1; min-width: 150px; padding: 0.6rem 0.8rem; font-size: 0.85rem; }
+
         footer {
             text-align: center; padding: 1.8rem; color: var(--muted);
             font-size: 0.85rem; border-top: 1px solid var(--border);
@@ -847,7 +923,7 @@ _____________
 
         function openApp() {
             if (!requireAccount()) return;
-            window.open(GOOGLE_FLOW_URL, '_blank');
+            openStudio(); // الاستوديو المدمج — تجربة داخل الموقع
         }
 
         function openSubscribe() {
@@ -926,6 +1002,29 @@ _____________
                 }
             }, 20000);
         }
+
+        // ===== الاستوديو المدمج =====
+        function openStudio() {
+            const box = document.getElementById('studioPromptBox');
+            try { box.textContent = getImagePrompt(); } catch { box.textContent = '...'; }
+            document.getElementById('studioOverlay').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeStudio() {
+            document.getElementById('studioOverlay').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+        function studioCopyPrompt() {
+            copyPrompt('image');
+        }
+        // استقبال المستخدم عند عودته من تبويب Flow
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && document.getElementById('studioOverlay').classList.contains('show')) {
+                const el = document.querySelector('#studioOverlay .studio-head p');
+                if (el) el.innerHTML = '<span class="ar">👋 عدت! جاهز لنسخ برومبت آخر أو العودة للموقع</span><span class="en">👋 Welcome back! Ready to copy another prompt</span>';
+            }
+        });
+        // ============================
 
         function openContact() { document.getElementById('contactModal').classList.add('active'); }
         function closeContact() { document.getElementById('contactModal').classList.remove('active'); }
@@ -1370,6 +1469,50 @@ _____________
         <div class="stat-row"><span>⏳ طلبات معلقة</span><b id="stClaims">...</b></div>
         <div class="stat-row"><span>💬 رسائل جديدة</span><b id="stMsgs">...</b></div>
         <button type="button" class="stats-close" onclick="document.getElementById('statsPanel').classList.remove('show')">إغلاق ✕</button>
+    </div>
+
+    <!-- 🎬 الاستوديو المدمج -->
+    <div class="studio-overlay" id="studioOverlay">
+        <div class="studio-inner">
+            <div class="studio-head">
+                <h2>🎬 استوديو عارضتي</h2>
+                <p style="color:var(--muted);font-size:0.9rem">
+                    <span class="ar">كل شيء جاهز — 3 خطوات وينتهي كل شيء</span>
+                    <span class="en">Everything is ready — 3 quick steps</span>
+                </p>
+            </div>
+
+            <div class="studio-step">
+                <h3><span class="stepnum">1</span> <span class="ar">برومبتك الحالي</span><span class="en">Your current prompt</span></h3>
+                <div class="studio-prompt-box" id="studioPromptBox">...</div>
+                <button type="button" class="btn btn-outline" style="width:100%;padding:0.6rem" onclick="studioCopyPrompt()">
+                    📋 <span class="ar">نسخ البرومبت</span><span class="en">Copy prompt</span>
+                </button>
+            </div>
+
+            <div class="studio-step">
+                <h3><span class="stepnum">2</span> <span class="ar">افتح أداة الذكاء الاصطناعي</span><span class="en">Open the AI tool</span></h3>
+                <button type="button" class="studio-launch" onclick="window.open(GOOGLE_FLOW_URL, '_blank')">
+                    🚀 <span class="ar">تشغيل Google Flow</span><span class="en">Launch Google Flow</span>
+                </button>
+                <p class="studio-tip">
+                    <span class="ar">💡 سيفتح في تبويب جديد — اترك هذه الصفحة مفتوحاً للعودة السريعة</span>
+                    <span class="en">💡 Opens in a new tab — keep this page open for a quick return</span>
+                </p>
+            </div>
+
+            <div class="studio-step">
+                <h3><span class="stepnum">3</span> <span class="ar">برومبتات الفيديو السريعة</span><span class="en">Quick video prompts</span></h3>
+                <div class="studio-btns">
+                    <button type="button" class="btn btn-gold" onclick="copyPrompt('video-hijab');">🧕 <span class="ar">فيديو محجبات</span><span class="en">Hijab video</span></button>
+                    <button type="button" class="btn btn-gold" onclick="copyPrompt('video-free');">💃 <span class="ar">فيديو بدون حجاب</span><span class="en">No-hijab video</span></button>
+                </div>
+            </div>
+
+            <button type="button" class="studio-back" onclick="closeStudio()">
+                <span class="ar">← رجوع للموقع</span><span class="en">← Back to site</span>
+            </button>
+        </div>
     </div>
 
 </body>
