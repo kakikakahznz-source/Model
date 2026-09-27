@@ -546,6 +546,15 @@
             padding: 2rem 1.2rem 3rem;
         }
         .studio-overlay.show { display: block; }
+        .flow-overlay .modal { width: min(1180px, 96vw); max-width: none; padding: 0; overflow: hidden; }
+        .flow-head { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 1.2rem; border-bottom:1px solid var(--border); }
+        .flow-head h2 { margin:0; color:var(--gold); font-size:1.1rem; }
+        .flow-frame-wrap { position:relative; min-height: min(78vh, 760px); background:#080808; }
+        #flowFrame { display:block; width:100%; height:min(78vh, 760px); border:0; background:#fff; }
+        .flow-notice { padding:.8rem 1rem; color:var(--muted); font-size:.82rem; text-align:center; line-height:1.6; border-top:1px solid var(--border); }
+        .flow-fallback { display:none; padding:1.5rem; text-align:center; background:#17130a; border:1px solid rgba(212,175,55,.35); color:var(--text); }
+        .flow-fallback.show { display:block; }
+        .flow-fallback p { color:var(--muted); margin:.5rem auto 1rem; max-width:680px; }
         .studio-inner { max-width: 640px; margin: 0 auto; }
         .studio-head { text-align: center; margin-bottom: 1.6rem; }
         .studio-head h2 {
@@ -849,6 +858,68 @@
         </div>
     </div>
 
+    <!-- AI Studio -->
+    <div class="studio-overlay" id="studioOverlay" role="dialog" aria-modal="true" aria-labelledby="studioTitle">
+        <div class="studio-inner">
+            <div class="studio-head">
+                <button type="button" class="modal-close" onclick="closeStudio()" aria-label="Close">×</button>
+                <h2 id="studioTitle"><span class="ar">استوديو عارضتي</span><span class="en">MyModel Studio</span></h2>
+                <p class="studio-tip"><span class="ar">أنشئي صورة تجريبية أو انسخي برومبت الفيديو.</span><span class="en">Create a preview image or copy a video prompt.</span></p>
+            </div>
+            <div class="studio-grid">
+                <section class="studio-step">
+                    <h3>1 <span class="ar">صورة الملابس</span><span class="en">Clothing photo</span></h3>
+                    <label class="studio-upload" for="studioPhotoInput" id="photoZone">
+                        <span class="ar">اختاري صورة من جهازك</span><span class="en">Choose a photo</span>
+                    </label>
+                    <input id="studioPhotoInput" type="file" accept="image/*" hidden onchange="studioPhoto(this)">
+                </section>
+                <section class="studio-step">
+                    <h3>2 <span class="ar">برومبت الصورة</span><span class="en">Image prompt</span></h3>
+                    <textarea class="studio-textarea" id="imgPromptBox" rows="8" placeholder="اكتبي وصف الصورة..."></textarea>
+                    <button type="button" class="btn btn-gold" id="genBtn" onclick="genImage()"><span class="ar">توليد صورة تجريبية</span><span class="en">Generate preview</span></button>
+                    <div id="genStatus" class="studio-tip" style="display:none"><span class="ar">جاري التوليد...</span><span class="en">Generating...</span></div>
+                </section>
+                <section class="studio-step">
+                    <h3>3 <span class="ar">برومبت الفيديو</span><span class="en">Video prompt</span></h3>
+                    <textarea class="studio-textarea" id="studioPromptBox" rows="8" placeholder="برومبت الفيديو"></textarea>
+                    <div class="studio-btns">
+                        <button type="button" class="btn btn-outline" onclick="setVideoPrompt('hijab')"><span class="ar">محجبات</span><span class="en">Hijab</span></button>
+                        <button type="button" class="btn btn-outline" onclick="setVideoPrompt('free')"><span class="ar">بدون حجاب</span><span class="en">No hijab</span></button>
+                        <button type="button" class="btn btn-gold" onclick="studioCopyPrompt()"><span class="ar">نسخ</span><span class="en">Copy</span></button>
+                    </div>
+                </section>
+                <section class="studio-step">
+                    <h3>4 <span class="ar">المعرض</span><span class="en">Gallery</span></h3>
+                    <div class="result-grid" id="resultGrid" aria-live="polite"></div>
+                </section>
+            </div>
+            <section class="studio-step" style="margin-top:1rem">
+                <h3><span class="ar">أداة التجربة الخارجية</span><span class="en">External try-on tool</span></h3>
+                <div id="aiFrameBox" class="ai-frame-box"><button type="button" class="btn btn-outline" onclick="loadAiFrame()"><span class="ar">تحميل الأداة عند الطلب</span><span class="en">Load tool on demand</span></button></div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Google Flow: attempted in-site embed with same-tab fallback because Flow blocks cross-origin iframes. -->
+    <div class="modal-overlay flow-overlay" id="flowModal" role="dialog" aria-modal="true" aria-labelledby="flowTitle">
+        <div class="modal">
+            <div class="flow-head">
+                <h2 id="flowTitle"><span class="ar">Google Flow داخل الموقع</span><span class="en">Google Flow in this site</span></h2>
+                <button type="button" class="modal-close" onclick="closeFlow()" aria-label="Close">×</button>
+            </div>
+            <div class="flow-frame-wrap">
+                <iframe id="flowFrame" title="Google Flow" loading="lazy" referrerpolicy="no-referrer" allow="camera; microphone; clipboard-read; clipboard-write"></iframe>
+                <div class="flow-fallback" id="flowFallback">
+                    <strong><span class="ar">Google Flow يمنع التضمين داخل المواقع الخارجية.</span><span class="en">Google Flow blocks embedding on external websites.</span></strong>
+                    <p><span class="ar">هذا بسبب حماية Google الأمنية، وليس خطأً في موقعك. يمكنك فتحه في نفس الصفحة بدل إنشاء نافذة جديدة.</span><span class="en">This is enforced by Google security, not by your site. You can continue in the same tab without opening a new window.</span></p>
+                    <button type="button" class="btn btn-gold" onclick="openFlowSameTab()"><span class="ar">المتابعة في نفس الصفحة</span><span class="en">Continue in this tab</span></button>
+                </div>
+            </div>
+            <div class="flow-notice"><span class="ar">سيتم تحميل Flow عند الطلب. قد يمنع Google عرضه داخل iframe.</span><span class="en">Flow loads on demand. Google may block rendering inside an iframe.</span></div>
+        </div>
+    </div>
+
     <footer>
         <div style="margin-bottom:0.8rem">
             <a href="#" onclick="adminLogin();return false;" style="color:var(--muted);font-size:0.8rem;text-decoration:none;border:1px solid var(--border);padding:0.3rem 1rem;border-radius:50px">
@@ -863,12 +934,11 @@
         const PAYPAL_CLIENT_ID = 'BAAfLmGRVCpE3Vj6kSTEy1UddEOwVqZREEUg_V7iThqyzDQj1aovwHiAF_koGm9hzS3a945hb4PrzMEQQY'; // PayPal Live Client ID
         const PRICE_USD = '15.00';        // سعر PayPal
         const PRICE_GOLD_DZD = 3500;      // سعر البطاقة الذهبية
-        const GOOGLE_FLOW_URL = 'https://labs.google/fx/tools/flow'; // بديل اختياري (يفتح في تبويب)
+        const GOOGLE_FLOW_URL = 'https://flow.google.com/'; // Google يمنع iframe عبر X-Frame-Options
         // 🔧 أداة الذكاء الاصطناعي المدمجة داخل الموقع (تضمين رسمي قانوني من Hugging Face)
         // يمكنك استبدالها بأي Space يدعم التضمين من: huggingface.co/spaces
         const AI_SPACE_URL = 'https://hf.space/embed/Kwai-Kolors/Kolors-Virtual-Try-On';
         const AI_SPACE_DIRECT = 'https://huggingface.co/spaces/Kwai-Kolors/Kolors-Virtual-Try-On';
-        const ADMIN_CODE = 'midou1987mm';
         const CCP_NUMBER = '0025148966/05';   // رقم CCP لاستقبال التحويلات
         const CCP_HOLDER = 'عارضتي';           // اسم صاحب الحساب
         const WHATSAPP_NUMBER = '';            // مثال: '213550123456' — لزر واتساب في صفحة التحويل // ⚠️ غيّر رمز الإدارة (نفس القيمة في admin.html)
@@ -980,8 +1050,10 @@ _____________
 
         let payMethod = 'transfer';
 
+        // Subscription state is deliberately kept in memory only. localStorage is not authentication.
+        let subscriptionState = { verified: false, email: '' };
         function isPaid() {
-            return localStorage.getItem('mymodel_paid') === '1';
+            return subscriptionState.verified === true;
         }
 
         function requireAccount() {
@@ -994,9 +1066,33 @@ _____________
             return false;
         }
 
+        let flowLoaded = false;
         function openApp() {
             if (!requireAccount()) return;
-            window.open(GOOGLE_FLOW_URL, '_blank'); // فتح Flow مباشرة في نافذة نظيفة
+            const modal = document.getElementById('flowModal');
+            const frame = document.getElementById('flowFrame');
+            const fallback = document.getElementById('flowFallback');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            // Attempt the requested in-site embed. Google currently blocks this cross-origin.
+            if (!flowLoaded) {
+                flowLoaded = true;
+                frame.src = GOOGLE_FLOW_URL;
+                frame.addEventListener('load', () => {
+                    // X-Frame-Options can result in a blank frame; keep a clear fallback visible.
+                    setTimeout(() => fallback.classList.add('show'), 1200);
+                }, { once: true });
+                setTimeout(() => fallback.classList.add('show'), 2200);
+            } else {
+                fallback.classList.add('show');
+            }
+        }
+        function closeFlow() {
+            document.getElementById('flowModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        function openFlowSameTab() {
+            window.location.assign(GOOGLE_FLOW_URL);
         }
 
         function openSubscribe() {
@@ -1018,8 +1114,6 @@ _____________
             if (tf) tf.classList.toggle('show', m === 'transfer');
             const pb = document.getElementById('paypalBox');
             if (pb) pb.style.display = m === 'card' ? 'block' : 'none';
-            const wa = document.getElementById('waBtn');
-            if (wa && m === 'transfer') wa.style.display = WHATSAPP_NUMBER ? 'block' : 'none';
             if (m === 'card') renderPayPal();
         }
 
@@ -1061,8 +1155,8 @@ _____________
                 const st = await sbStatus(email);
                 if (st === 'active') {
                     clearInterval(timer);
-                    localStorage.setItem('mymodel_paid', '1');
-                    localStorage.setItem('mymodel_user', JSON.stringify({ email: email, method: 'transfer' }));
+                    subscriptionState = { verified: true, email };
+                    localStorage.setItem('mymodel_user', JSON.stringify({ email, method: 'transfer' }));
                     updatePaidUI();
                     document.getElementById('status').textContent = isEn()
                         ? '✅ Payment confirmed! Your subscription is now active.'
@@ -1098,9 +1192,14 @@ _____________
             const f = input.files && input.files[0];
             if (!f) return;
             const url = URL.createObjectURL(f);
-            document.getElementById('photoZone').innerHTML =
-                '<img src="' + url + '">' +
-                '<div class="uz-text"><span class="ar">✓ تم رفع الصورة — جاهزة! اضغط للتغيير</span><span class="en">✓ Photo ready — tap to change</span></div>';
+            const zone = document.getElementById('photoZone');
+            zone.replaceChildren();
+            const img = document.createElement('img');
+            img.src = url; img.alt = isEn() ? 'Selected clothing photo' : 'صورة الملابس المختارة';
+            const note = document.createElement('div');
+            note.className = 'uz-text';
+            note.textContent = isEn() ? '✓ Photo ready — tap to change' : '✓ تم رفع الصورة — اضغط للتغيير';
+            zone.append(img, note);
         }
 
         function studioResult(input) {
@@ -1113,9 +1212,14 @@ _____________
 
         function renderResults() {
             const g = document.getElementById('resultGrid');
-            g.innerHTML = studioResults.map(u =>
-                '<img src="' + u + '" onclick="window.open(\'' + u + '\',\'_blank\')">'
-            ).join('');
+            g.replaceChildren();
+            studioResults.forEach((u, i) => {
+                const img = document.createElement('img');
+                img.src = u; img.alt = (isEn() ? 'Generated result ' : 'نتيجة التوليد ') + (i + 1);
+                img.loading = 'lazy';
+                img.addEventListener('click', () => window.open(u, '_blank', 'noopener,noreferrer'));
+                g.appendChild(img);
+            });
         }
 
         let aiFrameLoaded = false;
@@ -1174,7 +1278,7 @@ _____________
         // استقبال المستخدم عند عودته من Flow
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) { window._flowAway = true; return; }
-            if (window._flowAway && localStorage.getItem('mymodel_paid') === '1') {
+            if (window._flowAway && isPaid()) {
                 window._flowAway = false;
                 const st = document.getElementById('status');
                 if (st) st.textContent = isEn()
@@ -1221,36 +1325,13 @@ _____________
             return Array.isArray(rows) ? rows.length : 0;
         }
 
-        async function adminStats() {
-            const code = prompt(isEn() ? 'Admin access code:' : 'أدخل رمز الدخول الإداري:');
-            if (code === null) return;
-            if (code !== ADMIN_CODE) { alert(isEn() ? 'Wrong code' : 'رمز خاطئ'); return; }
-            document.getElementById('statsPanel').classList.add('show');
-            document.getElementById('stTotal').textContent = '...';
-            try {
-                const [total, active, claims, msgs] = await Promise.all([
-                    sbCount('subscribers', ''),
-                    sbCount('subscribers', 'status=eq.active'),
-                    sbCount('payment_claims', 'status=eq.pending'),
-                    sbCount('messages', 'status=eq.new')
-                ]);
-                document.getElementById('stTotal').textContent = total;
-                document.getElementById('stActive').textContent = active;
-                document.getElementById('stClaims').textContent = claims;
-                document.getElementById('stMsgs').textContent = msgs;
-            } catch (e) {
-                document.getElementById('stTotal').textContent = '⚠️';
-            }
+        function adminStats() {
+            adminLogin();
         }
 
         function adminLogin() {
-            const code = prompt(isEn() ? 'Admin access code:' : 'أدخل رمز الدخول الإداري:');
-            if (code === null) return;
-            if (code === ADMIN_CODE) {
-                window.open('admin.html', '_blank');
-            } else if (code !== '') {
-                alert(isEn() ? 'Wrong code' : 'رمز خاطئ');
-            }
+            // The admin page performs Supabase Auth and server-side admin checks.
+            window.location.assign('admin.html');
         }
 
         // ============ Supabase: التفعيل المركزي ============
@@ -1316,12 +1397,11 @@ _____________
             if (!user.email) return;
             const st = await sbStatus(user.email);
             if (st === 'active') {
-                localStorage.setItem('mymodel_paid', '1');
-                updatePaidUI();
-            } else if (st === 'none') {
-                localStorage.removeItem('mymodel_paid');
-                updatePaidUI();
+                subscriptionState = { verified: true, email: user.email };
+            } else {
+                subscriptionState = { verified: false, email: user.email };
             }
+            updatePaidUI();
         }
 
         async function loginWithEmail() {
@@ -1334,7 +1414,7 @@ _____________
             document.getElementById('status').textContent = isEn() ? 'Checking subscription...' : 'جاري التحقق من الاشتراك...';
             const st = await sbStatus(email.trim());
             if (st === 'active') {
-                localStorage.setItem('mymodel_paid', '1');
+                subscriptionState = { verified: true, email: email.trim() };
                 localStorage.setItem('mymodel_user', JSON.stringify({ email: email.trim(), method: 'email-login' }));
                 updatePaidUI();
                 document.getElementById('status').textContent = isEn()
@@ -1402,7 +1482,7 @@ _____________
             const msg = isEn()
                 ? 'Hello! I paid 3500 DZD for MyModel subscription via BaridiMob. CCP: ' + CCP_NUMBER
                 : 'مرحباً! دفعت 3500 د.ج لاشتراك عارضتي عبر بريدي موب. الحساب: ' + CCP_NUMBER;
-            window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg), '_blank');
+            window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg), '_blank', 'noopener,noreferrer');
         }
 
         function openPayWait() { document.getElementById('payWait').classList.add('show'); }
@@ -1418,17 +1498,16 @@ _____________
                     : 'أدخل إيميلك لحفظ اشتراكك (للتفعيل على أي جهاز):', saved);
                 if (em && em.trim()) userData = Object.assign({}, userData, { email: em.trim() });
             }
-            localStorage.setItem('mymodel_paid', '1');
+            // The client is not allowed to self-activate. Register first, then verify centrally.
             localStorage.setItem('mymodel_user', JSON.stringify(userData));
             localStorage.removeItem('mymodel_pending');
-            updatePaidUI();
-            sbRegister(userData); // تسجيل مركزي في قاعدة البيانات
+            sbRegister(userData).then(() => verifyCentral());
             // Show success banner inside modal, then close
             const banner = document.getElementById('paySuccess');
             if (banner) banner.classList.add('show');
             document.getElementById('status').textContent = isEn()
-                ? '✅ Payment successful! Subscription activated. Open the app to continue.'
-                : '✅ تم الدفع بنجاح! تم تفعيل اشتراكك. افتح التطبيق للمتابعة.';
+                ? '✅ Payment received. Verifying your subscription securely…'
+                : '✅ تم استلام الدفع. جارٍ التحقق من الاشتراك بأمان…';
             setTimeout(() => {
                 closeSubscribe();
                 if (banner) banner.classList.remove('show');
@@ -1461,17 +1540,9 @@ _____________
         }
 
         function updatePaidUI() {
-            if (isPaid()) {
-                document.body.classList.add('is-paid');
-                const btn = document.getElementById('btnSubscribe');
-                if (btn) {
-                    btn.innerHTML = isEn()
-                        ? '✓ Subscribed'
-                        : '✓ مشترك';
-                    btn.style.opacity = '0.7';
-                    btn.onclick = null;
-                }
-            }
+            document.body.classList.toggle('is-paid', isPaid());
+            const btn = document.getElementById('btnSubscribe');
+            if (btn) btn.disabled = false;
         }
 
         function contactUs() {
@@ -1539,31 +1610,17 @@ _____________
             });
         }
 
-        // Handle PayPal return
+        // Never trust a URL parameter as proof of payment.
         (function() {
             const params = new URLSearchParams(window.location.search);
-            if (params.get('paid') === '1') {
-                const pending = localStorage.getItem('mymodel_pending');
-                localStorage.setItem('mymodel_paid', '1');
-                if (pending) {
-                    localStorage.setItem('mymodel_user', pending);
-                    localStorage.removeItem('mymodel_pending');
+            if (params.get('paid') === '1' || params.get('cancel') === '1') {
+                window.history.replaceState({}, '', window.location.pathname + window.location.hash);
+                if (params.get('cancel') === '1') {
+                    setTimeout(() => {
+                        const st = document.getElementById('status');
+                        if (st) st.textContent = isEn() ? 'Payment cancelled' : 'تم إلغاء الدفع';
+                    }, 300);
                 }
-                // Clean URL
-                window.history.replaceState({}, '', window.location.pathname + window.location.hash);
-                setTimeout(function() {
-                    alert(isEn()
-                        ? '✅ Payment received! Your subscription is now active.'
-                        : '✅ تم استلام الدفع! اشتراكك مفعّل الآن.');
-                }, 300);
-            }
-            if (params.get('cancel') === '1') {
-                window.history.replaceState({}, '', window.location.pathname + window.location.hash);
-                setTimeout(function() {
-                    document.getElementById('status').textContent = isEn()
-                        ? 'Payment cancelled'
-                        : 'تم إلغاء الدفع';
-                }, 300);
             }
         })();
 
