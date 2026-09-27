@@ -482,6 +482,59 @@
             .hero-img { max-width: 320px; }
         }
 
+
+        .admin-float {
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            z-index: 900;
+            width: 46px; height: 46px;
+            border-radius: 50%;
+            background: var(--card);
+            border: 1px solid var(--border);
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+        }
+        .stats-panel {
+            display: none;
+            position: fixed;
+            bottom: 74px;
+            left: 16px;
+            z-index: 901;
+            background: var(--card);
+            border: 1px solid var(--gold);
+            border-radius: 16px;
+            padding: 1.1rem 1.2rem;
+            min-width: 230px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+        .stats-panel.show { display: block; }
+        .stats-panel h3 { color: var(--gold); font-size: 1rem; margin-bottom: 0.7rem; text-align: center; }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(212,175,55,0.12);
+            font-size: 0.88rem;
+        }
+        .stat-row:last-of-type { border-bottom: none; }
+        .stat-row b { color: var(--gold-light); font-size: 1.05rem; }
+        .stats-close {
+            width: 100%;
+            margin-top: 0.7rem;
+            padding: 0.4rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
         footer {
             text-align: center; padding: 1.8rem; color: var(--muted);
             font-size: 0.85rem; border-top: 1px solid var(--border);
@@ -895,6 +948,36 @@ _____________
             }
         }
 
+        async function sbCount(table, params) {
+            const r = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?select=id&' + params, {
+                headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
+            });
+            const rows = await r.json();
+            return Array.isArray(rows) ? rows.length : 0;
+        }
+
+        async function adminStats() {
+            const code = prompt(isEn() ? 'Admin access code:' : 'أدخل رمز الدخول الإداري:');
+            if (code === null) return;
+            if (code !== ADMIN_CODE) { alert(isEn() ? 'Wrong code' : 'رمز خاطئ'); return; }
+            document.getElementById('statsPanel').classList.add('show');
+            document.getElementById('stTotal').textContent = '...';
+            try {
+                const [total, active, claims, msgs] = await Promise.all([
+                    sbCount('subscribers', ''),
+                    sbCount('subscribers', 'status=eq.active'),
+                    sbCount('payment_claims', 'status=eq.pending'),
+                    sbCount('messages', 'status=eq.new')
+                ]);
+                document.getElementById('stTotal').textContent = total;
+                document.getElementById('stActive').textContent = active;
+                document.getElementById('stClaims').textContent = claims;
+                document.getElementById('stMsgs').textContent = msgs;
+            } catch (e) {
+                document.getElementById('stTotal').textContent = '⚠️';
+            }
+        }
+
         function adminLogin() {
             const code = prompt(isEn() ? 'Admin access code:' : 'أدخل رمز الدخول الإداري:');
             if (code === null) return;
@@ -1266,6 +1349,17 @@ _____________
                 <span class="ar">إغلاق</span><span class="en">Close</span>
             </button>
         </div>
+    </div>
+
+    <!-- زر إحصائيات الأدمن العائم -->
+    <button type="button" class="admin-float" onclick="adminStats()" title="الإحصائيات">👥</button>
+    <div class="stats-panel" id="statsPanel">
+        <h3>📊 لوحة سريعة</h3>
+        <div class="stat-row"><span>👥 إجمالي المشتركين</span><b id="stTotal">...</b></div>
+        <div class="stat-row"><span>✅ اشتراكات فعّالة</span><b id="stActive">...</b></div>
+        <div class="stat-row"><span>⏳ طلبات معلقة</span><b id="stClaims">...</b></div>
+        <div class="stat-row"><span>💬 رسائل جديدة</span><b id="stMsgs">...</b></div>
+        <button type="button" class="stats-close" onclick="document.getElementById('statsPanel').classList.remove('show')">إغلاق ✕</button>
     </div>
 
 </body>
