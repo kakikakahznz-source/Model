@@ -64,18 +64,18 @@ small{color:var(--muted)}
     </div>
 
     <div class="card">
-        <h3 style="color:var(--gold)">⏳ طلبات التفعيل المعلقة <button style="width:auto;padding:0.3rem 1rem;font-size:0.8rem;margin:0;float:left" onclick="loadClaims()">🔄 تحديث</button></h3>
+        <h3 style="color:var(--gold)">⏳ طلبات التفعيل المعلقة <button style="width:auto;padding:0.3rem 1rem;font-size:0.8rem;margin:0;float:left" onclick="refreshBtn(this, loadClaims)">🔄 تحديث</button></h3>
         <small>تحقق من رقم العملية في تطبيق بريدي موب ثم اضغط تأكيد</small>
         <div id="claimsList"><small>اضغط تحديث لعرض الطلبات</small></div>
     </div>
 
     <div class="card">
-        <h3 style="color:var(--gold)">💬 رسائل المستخدمين <button style="width:auto;padding:0.3rem 1rem;font-size:0.8rem;margin:0;float:left" onclick="loadMessages()">🔄 تحديث</button></h3>
+        <h3 style="color:var(--gold)">💬 رسائل المستخدمين <button style="width:auto;padding:0.3rem 1rem;font-size:0.8rem;margin:0;float:left" onclick="refreshBtn(this, loadMessages)">🔄 تحديث</button></h3>
         <div id="msgList"><small>اضغط تحديث لعرض الرسائل</small></div>
     </div>
 
     <div class="card">
-        <h3 style="color:var(--gold)">📋 المشتركون <button style="width:auto;padding:0.3rem 1rem;font-size:0.8rem;margin:0;float:left" onclick="loadSubs()">🔄 تحديث</button></h3>
+        <h3 style="color:var(--gold)">📋 المشتركون <button style="width:auto;padding:0.3rem 1rem;font-size:0.8rem;margin:0;float:left" onclick="refreshBtn(this, loadSubs)">🔄 تحديث</button></h3>
         <div id="subsList"><small>اضغط تحديث لعرض القائمة</small></div>
     </div>
 </div>
@@ -127,6 +127,41 @@ async function activate(){
     }catch(e){ msg.className='msg err'; msg.textContent='❌ خطأ: ' + e.message; }
 }
 
+// زر تحديث مع تغذية بصرية: يدور ثم يعلّم ✓ تم
+function refreshBtn(btn, fn){
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ ...';
+    Promise.resolve(fn()).then(() => {
+        btn.innerHTML = '✓ تم';
+        setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 1200);
+    }).catch(() => {
+        btn.innerHTML = '❌ خطأ';
+        setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 1500);
+    });
+}
+
+// تحديث تلقائي كل 30 ثانية (صامت)
+setInterval(() => {
+    if (document.getElementById('panel') && document.getElementById('panel').style.display !== 'none') {
+        loadClaims(); loadMessages(); loadSubs();
+    }
+}, 30000);
+
+// حذف رسالة
+async function deleteMsg(id){
+    if(!confirm('حذف هذه الرسالة نهائياً؟')) return;
+    try{
+        const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/delete_message', {
+            method:'POST',
+            headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'},
+            body:JSON.stringify({p_id:id, p_code:ADMIN_CODE})
+        });
+        const ok = await r.json();
+        if(ok===true){ loadMessages(); } else alert('❌ فشل الحذف');
+    }catch(e){ alert('❌ خطأ: '+e.message); }
+}
+
 async function loadClaims(){
     const r = await fetch(SUPABASE_URL + '/rest/v1/payment_claims?select=id,email,tx_ref,created_at&status=eq.pending&order=created_at.desc', {
         headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}
@@ -170,8 +205,10 @@ async function loadMessages(){
            + '<b style="color:var(--gold);font-size:0.85rem">'+(m.email||'زائر')+'</b>'
            + '<span class="badge '+(m.status==='new'?'on':'off')+'">'+(m.status==='new'?'جديدة':'مقروءة')+'</span></div>'
            + '<div style="font-size:0.85rem;margin-top:0.4rem;line-height:1.5">'+(m.message||'')+'</div>'
-           + (m.status==='new' ? '<button style="width:auto;padding:0.25rem 0.8rem;font-size:0.75rem;margin:0.4rem 0 0" onclick="markRead(\''+m.id+'\')">✓ تمت القراءة</button>' : '')
-           + '</div>';
+           + '<div style="margin-top:0.4rem;display:flex;gap:0.4rem">'
+           + (m.status==='new' ? '<button style="width:auto;padding:0.25rem 0.8rem;font-size:0.75rem;margin:0" onclick="markRead(\''+m.id+'\')">✓ تمت القراءة</button>' : '')
+           + '<button style="width:auto;padding:0.25rem 0.8rem;font-size:0.75rem;margin:0;background:rgba(198,40,40,0.15);border:1px solid #c62828;color:#ff8a80" onclick="deleteMsg(\''+m.id+'\')">🗑️ حذف</button>'
+           + '</div></div>';
     });
     box.innerHTML = h;
 }
