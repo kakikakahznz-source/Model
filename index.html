@@ -996,7 +996,7 @@ _____________
 
         function openApp() {
             if (!requireAccount()) return;
-            openStudio(); // الاستوديو المدمج — تجربة داخل الموقع
+            window.open(GOOGLE_FLOW_URL, '_blank'); // فتح Flow مباشرة في نافذة نظيفة
         }
 
         function openSubscribe() {
@@ -1171,11 +1171,15 @@ _____________
                 document.execCommand('copy');
             });
         }
-        // استقبال المستخدم عند عودته من تبويب Flow
+        // استقبال المستخدم عند عودته من Flow
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && document.getElementById('studioOverlay').classList.contains('show')) {
-                const el = document.querySelector('#studioOverlay .studio-head p');
-                if (el) el.innerHTML = '<span class="ar">👋 عدت! جاهز لنسخ برومبت آخر أو العودة للموقع</span><span class="en">👋 Welcome back! Ready to copy another prompt</span>';
+            if (document.hidden) { window._flowAway = true; return; }
+            if (window._flowAway && localStorage.getItem('mymodel_paid') === '1') {
+                window._flowAway = false;
+                const st = document.getElementById('status');
+                if (st) st.textContent = isEn()
+                    ? '👋 Welcome back! Need another prompt? Pick one above and copy it.'
+                    : '👋 عدت! هل أنجزت؟ اختر برومبت آخر من الأعلى وانسخه.';
             }
         });
         // ============================
@@ -1625,77 +1629,6 @@ _____________
         <button type="button" class="stats-close" onclick="document.getElementById('statsPanel').classList.remove('show')">إغلاق ✕</button>
     </div>
 
-    <!-- 🎬 الاستوديو المدمج -->
-    <div class="studio-overlay" id="studioOverlay">
-        <div class="studio-inner">
-            <div class="studio-head">
-                <h2>🎬 استوديو عارضتي</h2>
-                <p style="color:var(--muted);font-size:0.9rem">
-                    <span class="ar">اكتب البرومبت ← اضغط توليد ← احصل على صورتك هنا</span>
-                    <span class="en">Write prompt ← Generate ← get your image here</span>
-                </p>
-            </div>
-
-            <div class="studio-grid" style="grid-template-columns:1fr">
-
-                <!-- وضع الصورة: توليد مباشر بالنص -->
-                <div class="studio-step" style="border-color:var(--gold)">
-                    <h3>🖼️ <span class="ar">وضع الصورة — توليد مباشر داخل الموقع</span><span class="en">🖼️ Image mode — generate right here</span></h3>
-                    <label style="display:block;font-size:0.85rem;color:var(--muted);margin:0.4rem 0 0.3rem">
-                        <span class="ar">✏️ البرومبت (عدّله حسب الفستان: اللون، الطول، النقش...)</span>
-                        <span class="en">✏️ Prompt (edit: color, length, pattern...)</span>
-                    </label>
-                    <textarea class="studio-textarea" id="imgPromptBox" style="min-height:110px" oninput="this.dataset.touched=1"></textarea>
-                    <button type="button" class="studio-launch" style="min-height:56px;margin-top:0.6rem" id="genBtn" onclick="genImage()">
-                        ⚡ <span class="ar">توليد الصورة الآن</span><span class="en">Generate now</span>
-                    </button>
-                    <div id="genStatus" class="studio-tip" style="display:none;margin-top:0.5rem">⏳ <span class="ar">جاري التوليد... قد يستغرق 10-30 ثانية</span><span class="en">Generating... 10-30s</span></div>
-                    <details style="margin-top:0.8rem">
-                        <summary style="cursor:pointer;color:var(--muted);font-size:0.82rem">
-                            <span class="ar">🔧 وضع متقدم: نفس الفستان على عارضة حقيقية (Try-On)</span>
-                            <span class="en">🔧 Advanced: exact garment try-on</span>
-                        </summary>
-                        <div id="aiFrameBox2" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#0f0f0f;margin-top:0.5rem">
-                            <button type="button" class="studio-launch" style="min-height:70px;font-size:0.95rem" onclick="window.open(AI_SPACE_DIRECT,'_blank')">
-                                🚀 <span class="ar">فتح أداة Try-On في تبويب (ارفع صورتين)</span><span class="en">Open try-on tool in tab</span>
-                            </button>
-                        </div>
-                    </details>
-                </div>
-
-                <!-- وضع الفيديو -->
-                <div class="studio-step" style="border-color:var(--gold)">
-                    <h3>🎬 <span class="ar">وضع الفيديو — انسخ البرومبت والصقه في أداة الفيديو</span><span class="en">🎬 Video mode</span></h3>
-                    <textarea class="studio-textarea" id="studioPromptBox" style="min-height:110px"></textarea>
-                    <div class="studio-btns" style="margin-top:0.7rem">
-                        <button type="button" class="btn btn-gold" onclick="studioCopyPrompt()">📋 <span class="ar">نسخ</span><span class="en">Copy</span></button>
-                        <button type="button" class="btn btn-outline" onclick="setVideoPrompt('hijab')">🧕 <span class="ar">محجبات</span><span class="en">Hijab</span></button>
-                        <button type="button" class="btn btn-outline" onclick="setVideoPrompt('free')">💃 <span class="ar">بدون حجاب</span><span class="en">No hijab</span></button>
-                        <button type="button" class="btn btn-outline" onclick="window.open(GOOGLE_FLOW_URL,'_blank')">🚀 Flow</button>
-                    </div>
-                </div>
-
-                <!-- النتيجة -->
-                <div class="studio-step">
-                    <h3>🖼️ <span class="ar">معرض نتائجك</span><span class="en">🖼️ Results gallery</span></h3>
-                    <input type="file" id="resultInput" accept="image/*" style="display:none" onchange="studioResult(this)">
-                    <div class="upload-zone" onclick="document.getElementById('resultInput').click()">
-                        <div class="uz-icon">🖼️</div>
-                        <div class="uz-text"><span class="ar">اضغط لرفع أي نتيجة (من التوليد أو من جهازك)</span><span class="en">Upload any result</span></div>
-                    </div>
-                    <div class="result-grid" id="resultGrid"></div>
-                </div>
-            </div>
-
-            <p class="powered-by">
-                <span class="ar">⚡ التوليد بالصور: Pollinations AI (مجاني ومفتوح) — الفيديو: Google Flow</span>
-                <span class="en">⚡ Images: Pollinations AI (free & open) — Video: Google Flow</span>
-            </p>
-
-            <button type="button" class="studio-back" onclick="closeStudio()">
-                <span class="ar">← رجوع للموقع</span><span class="en">← Back to site</span>
-            </button>       </div>
-    </div>
 
 </body>
 </html>
