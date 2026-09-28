@@ -1066,26 +1066,10 @@ _____________
             return false;
         }
 
-        let flowLoaded = false;
         function openApp() {
             if (!requireAccount()) return;
-            const modal = document.getElementById('flowModal');
-            const frame = document.getElementById('flowFrame');
-            const fallback = document.getElementById('flowFallback');
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            // Attempt the requested in-site embed. Google currently blocks this cross-origin.
-            if (!flowLoaded) {
-                flowLoaded = true;
-                frame.src = GOOGLE_FLOW_URL;
-                frame.addEventListener('load', () => {
-                    // X-Frame-Options can result in a blank frame; keep a clear fallback visible.
-                    setTimeout(() => fallback.classList.add('show'), 1200);
-                }, { once: true });
-                setTimeout(() => fallback.classList.add('show'), 2200);
-            } else {
-                fallback.classList.add('show');
-            }
+            // Google Flow blocks iframe embedding, so navigate directly in the same tab.
+            window.location.assign(GOOGLE_FLOW_URL);
         }
         function closeFlow() {
             document.getElementById('flowModal').classList.remove('active');
