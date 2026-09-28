@@ -776,6 +776,10 @@
             <span class="ar">🚀 افتح التطبيق</span>
             <span class="en">🚀 Open the App</span>
         </button>
+        <button type="button" class="btn btn-gold" onclick="openStudio()">
+            <span class="ar">🪄 جرّبي التوليد داخل الموقع</span>
+            <span class="en">🪄 Generate inside the site</span>
+        </button>
         <button type="button" class="btn btn-outline" onclick="openContact()">
             <span class="ar">💬 راسلنا</span>
             <span class="en">💬 Contact Us</span>
@@ -864,7 +868,7 @@
             <div class="studio-head">
                 <button type="button" class="modal-close" onclick="closeStudio()" aria-label="Close">×</button>
                 <h2 id="studioTitle"><span class="ar">استوديو عارضتي</span><span class="en">MyModel Studio</span></h2>
-                <p class="studio-tip"><span class="ar">أنشئي صورة تجريبية أو انسخي برومبت الفيديو.</span><span class="en">Create a preview image or copy a video prompt.</span></p>
+                <p class="studio-tip"><span class="ar">ارفعي صورة، اكتبي البرومبت، وشاهدي النتيجة هنا دون مغادرة الموقع.</span><span class="en">Upload an image, write a prompt, and see the result here without leaving the site.</span></p>
             </div>
             <div class="studio-grid">
                 <section class="studio-step">
@@ -894,10 +898,7 @@
                     <div class="result-grid" id="resultGrid" aria-live="polite"></div>
                 </section>
             </div>
-            <section class="studio-step" style="margin-top:1rem">
-                <h3><span class="ar">أداة التجربة الخارجية</span><span class="en">External try-on tool</span></h3>
-                <div id="aiFrameBox" class="ai-frame-box"><button type="button" class="btn btn-outline" onclick="loadAiFrame()"><span class="ar">تحميل الأداة عند الطلب</span><span class="en">Load tool on demand</span></button></div>
-            </section>
+            <p class="studio-tip"><span class="ar">التوليد يتم عبر خادم آمن، ولا يتم كشف مفتاح OpenAI في المتصفح.</span><span class="en">Generation runs through a secure server; your OpenAI key is never exposed in the browser.</span></p>
         </div>
     </div>
 
@@ -937,13 +938,12 @@
         const GOOGLE_FLOW_URL = 'https://flow.google.com/'; // Google يمنع iframe عبر X-Frame-Options
         // 🔧 أداة الذكاء الاصطناعي المدمجة داخل الموقع (تضمين رسمي قانوني من Hugging Face)
         // يمكنك استبدالها بأي Space يدعم التضمين من: huggingface.co/spaces
-        const AI_SPACE_URL = 'https://hf.space/embed/Kwai-Kolors/Kolors-Virtual-Try-On';
-        const AI_SPACE_DIRECT = 'https://huggingface.co/spaces/Kwai-Kolors/Kolors-Virtual-Try-On';
         const CCP_NUMBER = '0025148966/05';   // رقم CCP لاستقبال التحويلات
         const CCP_HOLDER = 'عارضتي';           // اسم صاحب الحساب
         const WHATSAPP_NUMBER = '';            // مثال: '213550123456' — لزر واتساب في صفحة التحويل // ⚠️ غيّر رمز الإدارة (نفس القيمة في admin.html)
         const SUPABASE_URL = 'https://mkgsewcvfftilcdatgqg.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_sSZbTaNKIwMEzhPQhPnE3g_Xj-xsNZP'; // Publishable (آمن للعرض)
+        const GENERATE_IMAGE_URL = SUPABASE_URL + '/functions/v1/generate-image';
         // =======================================================
         const bodyTypes = [
             { id: 'slim', ar: 'نحيفة', en: 'Slim' },
@@ -1187,19 +1187,29 @@ _____________
             document.body.style.overflow = '';
         }
         let studioResults = [];
+        let selectedStudioImageData = '';
 
         function studioPhoto(input) {
             const f = input.files && input.files[0];
-            if (!f) return;
-            const url = URL.createObjectURL(f);
-            const zone = document.getElementById('photoZone');
-            zone.replaceChildren();
-            const img = document.createElement('img');
-            img.src = url; img.alt = isEn() ? 'Selected clothing photo' : 'صورة الملابس المختارة';
-            const note = document.createElement('div');
-            note.className = 'uz-text';
-            note.textContent = isEn() ? '✓ Photo ready — tap to change' : '✓ تم رفع الصورة — اضغط للتغيير';
-            zone.append(img, note);
+            if (!f || !f.type.startsWith('image/')) return;
+            if (f.size > 10 * 1024 * 1024) {
+                alert(isEn() ? 'Choose an image smaller than 10 MB.' : 'اختاري صورة أصغر من 10 ميغابايت.');
+                input.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => {
+                selectedStudioImageData = String(reader.result || '');
+                const zone = document.getElementById('photoZone');
+                zone.replaceChildren();
+                const img = document.createElement('img');
+                img.src = selectedStudioImageData; img.alt = isEn() ? 'Selected clothing photo' : 'صورة الملابس المختارة';
+                const note = document.createElement('div');
+                note.className = 'uz-text';
+                note.textContent = isEn() ? '✓ Photo ready — tap to change' : '✓ تم رفع الصورة — اضغط للتغيير';
+                zone.append(img, note);
+            };
+            reader.readAsDataURL(f);
         }
 
         function studioResult(input) {
@@ -1222,42 +1232,32 @@ _____________
             });
         }
 
-        let aiFrameLoaded = false;
-        function loadAiFrame() {
-            if (aiFrameLoaded) return;
-            aiFrameLoaded = true;
-            document.getElementById('aiFrameBox').innerHTML =
-                '<iframe src="' + AI_SPACE_URL + '" style="width:100%;height:560px;border:none;display:block" allow="camera;clipboard-write"></iframe>';
-        }
-
-        // توليد صورة مباشرة عبر Pollinations (مجاني، بدون مفتاح)
-        function genImage() {
+        // التوليد الحقيقي يتم عبر Supabase Edge Function حتى يبقى مفتاح OpenAI على الخادم.
+        async function genImage() {
             const prompt = (document.getElementById('imgPromptBox').value || '').trim();
-            if (prompt.length < 5) { alert(isEn() ? 'Write a prompt first' : 'اكتب البرومبت أولاً'); return; }
             const btn = document.getElementById('genBtn');
             const status = document.getElementById('genStatus');
+            if (prompt.length < 5) { alert(isEn() ? 'Write a prompt first.' : 'اكتبي البرومبت أولاً.'); return; }
+            if (!selectedStudioImageData) { alert(isEn() ? 'Upload an image first.' : 'ارفعي صورة أولاً.'); return; }
             btn.disabled = true;
             status.style.display = 'block';
-            const seed = Math.floor(Math.random() * 999999);
-            const url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt) +
-                        '?width=768&height=1024&seed=' + seed + '&nologo=true&model=flux';
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => {
-                btn.disabled = false;
-                status.style.display = 'none';
-                studioResults.push(url);
+            try {
+                const r = await fetch(GENERATE_IMAGE_URL, {
+                    method: 'POST',
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt, imageData: selectedStudioImageData })
+                });
+                const data = await r.json().catch(() => ({}));
+                if (!r.ok || !data.imageData) throw new Error(data.detail || data.error || 'Generation failed');
+                studioResults.unshift(data.imageData);
                 renderResults();
-                document.getElementById('status').textContent = isEn()
-                    ? '✅ Image generated! See your gallery below.'
-                    : '✅ تم التوليد! شاهد معرضك بالأسفل.';
-            };
-            img.onerror = () => {
+                document.getElementById('status').textContent = isEn() ? '✅ Image generated below.' : '✅ تم توليد الصورة بالأسفل.';
+            } catch (e) {
+                alert((isEn() ? 'Generation failed: ' : 'فشل التوليد: ') + e.message);
+            } finally {
                 btn.disabled = false;
                 status.style.display = 'none';
-                alert(isEn() ? 'Generation failed. Try again or shorten the prompt.' : 'فشل التوليد. حاول مجدداً أو قصّر البرومبت.');
-            };
-            img.src = url;
+            }
         }
 
         function setVideoPrompt(kind) {
