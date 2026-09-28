@@ -805,7 +805,7 @@
 
             <label><span class="ar">اختر طريقة الدفع</span><span class="en">Choose payment method</span></label>
             <div class="success-banner" id="paySuccess">
-                <span class="ar">✅ تم الدفع بنجاح! تم تفعيل اشتراكك تلقائياً.</span>
+                <span class="ar">✅ تم استلام الدفع! سيتم تفعيل الاشتراك بعد مراجعة الإدارة.</span>
                 <span class="en">✅ Payment successful! Your subscription is now active.</span>
             </div>
 
@@ -832,8 +832,8 @@
                     <div style="font-size:1.3rem;font-weight:800;color:var(--gold);letter-spacing:1px;direction:ltr">0025148966/05</div>
                 </div>
                 <div style="margin-top:0.9rem;font-size:0.85rem;color:var(--muted);text-align:center">
-                    <span class="ar">الخطوة 2 — أدخل بياناتك ليتم التفعيل التلقائي خلال دقائق:</span>
-                    <span class="en">Step 2 — Enter your details for auto-activation within minutes:</span>
+                    <span class="ar">الخطوة 2 — أدخل بياناتك ليصل الطلب إلى الإدارة للمراجعة:</span>
+                    <span class="en">Step 2 — Enter your details so the admin can review your request:</span>
                 </div>
                 <label style="margin-top:0.5rem"><span class="ar">إيميلك</span><span class="en">Your email</span></label>
                 <input type="email" id="claimEmail" placeholder="email@example.com" style="width:100%;padding:0.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:#0f0f0f;color:var(--text);font-family:'Cairo',sans-serif;outline:none">
@@ -845,7 +845,7 @@
             <div id="paypalBox" style="display:none; margin-top:1rem;">
                 <div id="paypal-button-container"></div>
                 <div class="gold-note" style="text-align:center">
-                    <span class="ar">اضغط زر PayPal لإتمام الدفع بأمان — التفعيل فوري.</span>
+                    <span class="ar">اضغط زر PayPal لإتمام الدفع بأمان — يتم التفعيل بعد مراجعة الإدارة.</span>
                     <span class="en">Click the PayPal button to pay securely — instant activation.</span>
                 </div>
             </div>
@@ -1117,37 +1117,13 @@ _____________
                 localStorage.setItem('mymodel_user', JSON.stringify({ email: email, method: 'claim-pending' }));
                 closeSubscribe();
                 document.getElementById('status').textContent = isEn()
-                    ? '⏳ Request sent! Your subscription will activate automatically within minutes...'
-                    : '⏳ تم إرسال الطلب! سيُفعَّل اشتراكك تلقائياً خلال دقائق...';
-                pollForActivation(email);
+                    ? '⏳ Request received. Your subscription will activate after admin review.'
+                    : '⏳ تم استلام الطلب. سيتم تفعيل الاشتراك بعد مراجعة الإدارة.';
             } catch (e) {
                 btn.disabled = false;
                 btn.innerHTML = original;
                 alert(isEn() ? 'Could not send request. Try again.' : 'تعذر إرسال الطلب. حاول مجدداً.');
             }
-        }
-
-        // فحص تلقائي كل 20 ثانية لمدة 5 دقائق — التفعيل الذاتي فور الموافقة
-        function pollForActivation(email) {
-            let tries = 0;
-            const timer = setInterval(async () => {
-                tries++;
-                const st = await sbStatus(email);
-                if (st === 'active') {
-                    clearInterval(timer);
-                    subscriptionState = { verified: true, email };
-                    localStorage.setItem('mymodel_user', JSON.stringify({ email, method: 'transfer' }));
-                    updatePaidUI();
-                    document.getElementById('status').textContent = isEn()
-                        ? '✅ Payment confirmed! Your subscription is now active.'
-                        : '✅ تم تأكيد الدفع! اشتراكك الآن مفعّل.';
-                } else if (tries >= 15) {
-                    clearInterval(timer);
-                    document.getElementById('status').textContent = isEn()
-                        ? '⏳ Still verifying your payment — it will activate automatically soon, or press 📧 below.'
-                        : '⏳ ما زلنا نتحقق من دفعتك — سيُفعَّل تلقائياً قريباً، أو اضغط زر 📧 بالأسفل.';
-                }
-            }, 20000);
         }
 
         // ===== الاستوديو المدمج =====
@@ -1511,12 +1487,12 @@ _____________
                 return;
             }
 
-            // PayPal — يُنجَز عبر زر PayPal الذكي في النافذة (onApprove يفعّل تلقائياً)
+            // PayPal — يُنجَز عبر زر PayPal الذكي في النافذة (onApprove يسجّل الطلب للمراجعة)
             if (!window.paypal) { renderPayPal(); }
             document.getElementById('paypalBox').style.display = 'block';
             alert(isEn()
-                ? 'Complete the payment with the PayPal button below — activation is instant.'
-                : 'أكمل الدفع عبر زر PayPal بالأسفل — التفعيل فوري.');
+                ? 'Complete the payment with the PayPal button below — activation follows admin review.'
+                : 'أكمل الدفع عبر زر PayPal بالأسفل — يتم التفعيل بعد مراجعة الإدارة.');
         }
 
         function updatePaidUI() {
@@ -1643,7 +1619,7 @@ _____________
             <ul class="pay-steps">
                 <li><span class="num">1</span><span class="ar">حوّل 3500 د.ج عبر بريدي موب أو مكتب البريد إلى CCP <b>0025148966/05</b></span><span class="en">Payment page opened in a <b>new tab</b> — complete it there (BaridiMob / Gold Card)</span></li>
                 <li><span class="num">2</span><span class="ar">بعد نجاح الدفع، اضغط الزر بالأسفل وأدخل إيميلك</span><span class="en">After success, press the button below and enter your email</span></li>
-                <li><span class="num">3</span><span class="ar">يُفعَّل اشتراكك خلال دقائق تلقائياً ✨</span><span class="en">Your subscription activates within minutes ✨</span></li>
+                <li><span class="num">3</span><span class="ar">يُفعَّل اشتراكك بعد مراجعة الإدارة ✨</span><span class="en">Your subscription activates after admin review ✨</span></li>
             </ul>
             <button type="button" class="pay-big-btn" onclick="closePayWait(); loginWithEmail();">
                 <span class="ar">✅ أكملت الدفع — فعّل اشتراكي</span>
