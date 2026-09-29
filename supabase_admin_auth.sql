@@ -94,3 +94,65 @@ $$;
 revoke all on function public.approve_payment_claim(uuid) from public;
 revoke all on function public.approve_payment_claim(uuid) from anon;
 grant execute on function public.approve_payment_claim(uuid) to authenticated;
+
+-- =========================================================
+-- حذف اشتراك من لوحة الإدارة (للمشرفين فقط)
+-- =========================================================
+drop function if exists public.delete_subscription(text);
+
+create or replace function public.delete_subscription(p_email text)
+returns boolean
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    was_deleted boolean;
+begin
+    if auth.uid() is null then
+        raise exception 'Authentication required' using errcode = '42501';
+    end if;
+
+    if not exists (
+        select 1 from public.admin_users
+        where user_id = auth.uid() and active = true
+    ) then
+        raise exception 'Admin access required' using errcode = '42501';
+    end if;
+
+    delete from public.subscribers
+    where lower(email) = lower(trim(p_email));
+    was_deleted := found;
+    return was_deleted;
+end;
+$$;
+
+revoke all on function public.delete_subscription(text) from public;
+revoke all on function public.delete_subscription(text) from anon;
+grant execute on function public.delete_subscription(text) to authenticated;
+
+-- قائمة الاشتراكات للمشرف فقط، لتفادي كشف الجدول عبر REST مباشرة
+drop function if exists public.list_subscriptions();
+create or replace function public.list_subscriptions()
+returns table(email text, status text, expires_at timestamptz, created_at timestamptz)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+    if auth.uid() is null or not exists (
+        select 1 from public.admin_users
+        where user_id = auth.uid() and active = true
+    ) then
+        raise exception 'Admin access required' using errcode = '42501';
+    end if;
+
+    return query
+    select s.email::text, s.status::text, s.expires_at, s.created_at
+    from public.subscribers s
+    order by s.created_at desc;
+end;
+$$;
+revoke all on function public.list_subscriptions() from public;
+revoke all on function public.list_subscriptions() from anon;
+grant execute on function public.list_subscriptions() to authenticated;

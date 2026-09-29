@@ -44,3 +44,7 @@ python3 -m http.server 8787 --bind 0.0.0.0
 
 زر **استوديو التوليد** يعرض تعليمات استخدام البرومبت الخاص بالمشترك، ورابط تطبيق Google Flow الرسمي على Google Play:
 `https://play.google.com/store/apps/details?id=com.google.android.apps.labs.whisk`
+
+### حذف الاشتراكات من لوحة الإدارة
+
+بعد تنفيذ آخر نسخة من `supabase_admin_auth.sql`، تظهر قائمة الاشتراكات داخل `admin.html`. زر **حذف الاشتراك** محمي بصلاحية Admin ويطلب تأكيدًا قبل الحذف؛ لا يتم حذف أي اشتراك تلقائيًا.

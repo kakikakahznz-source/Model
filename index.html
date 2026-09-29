@@ -747,14 +747,6 @@
         </div>
     </section>
 
-    <section class="prompts">
-        <h2>
-            <span class="ar">اختاري نوع الجسم</span>
-            <span class="en">Choose Body Type</span>
-        </h2>
-        <div class="prompt-grid" id="promptGrid"></div>
-    </section>
-
     <section class="actions">
         <button type="button" class="btn btn-outline" onclick="loginWithEmail()" style="margin-bottom:0.85rem">
             <span class="ar">📧 عندي اشتراك — فعّل بإيميلي</span>
@@ -765,8 +757,8 @@
             <span class="en">⭐ Subscribe Now — $15 or 3500 DZD / year</span>
         </button>
         <div class="prompt-actions-title">
-            <span class="ar">بعد الاشتراك، اختاري نوع الجسم ثم انسخي البرومبت المطلوب</span>
-            <span class="en">After subscribing, choose a body type and copy the prompt you need</span>
+            <span class="ar">بعد الاشتراك، انسخي برومبت الصورة أو الفيديو ثم افتحي الاستوديو</span>
+            <span class="en">After subscribing, copy the image or video prompt, then open the studio</span>
         </div>
         <button type="button" class="btn btn-gold" onclick="copyPrompt('image')">
             <span class="ar">🖼️ نسخ برومبت الصورة</span>
@@ -908,66 +900,27 @@
         const SUPABASE_URL = 'https://mkgsewcvfftilcdatgqg.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_sSZbTaNKIwMEzhPQhPnE3g_Xj-xsNZP'; // Publishable (آمن للعرض)
         // =======================================================
-        const bodyTypes = [
-            { id: 'slim', ar: 'نحيفة', en: 'Slim' },
-            { id: 'curvy', ar: 'عريضة', en: 'Curvy' },
-            { id: 'plus', ar: 'سمينة', en: 'Plus Size' },
-            { id: 'tall', ar: 'طويلة', en: 'Tall' },
-            { id: 'short', ar: 'قصيرة', en: 'Short' },
-            { id: 'average', ar: 'معتدلة', en: 'Average' }
-        ];
-
-        // Structured prompts: readable to people, predictable for image/video tools.
-        const imageBase = {
-            slim: 'BODY_TYPE: slim\nMODEL: adult female fashion model, slim body',
-            curvy: 'BODY_TYPE: curvy\nMODEL: adult female fashion model, curvy body',
-            plus: 'BODY_TYPE: plus-size\nMODEL: adult female fashion model, plus-size body',
-            tall: 'BODY_TYPE: tall\nMODEL: adult female fashion model, tall body',
-            short: 'BODY_TYPE: petite\nMODEL: adult female fashion model, petite body',
-            average: 'BODY_TYPE: average\nMODEL: adult female fashion model, average body'
-        };
-
-        const imageEnd = `\nTASK: dress the model in the provided garment.\nSTYLE: photorealistic commercial fashion campaign, elegant Instagram model pose.\nCOMPOSITION: preserve the original garment background and floor.\nQUALITY: high detail, sharp fabric texture, natural proportions.\nPRESERVE: exact garment color, cut, pattern, stitching, and all visible details.\nOUTPUT: premium fashion advertisement image.`;
-
+        // Structured prompts: readable and predictable for image/video tools.
+        const imagePrompt = `TYPE: fashion image generation
+SUBJECT: adult female fashion model wearing the provided garment
+TASK: dress the model in the provided garment.
+STYLE: photorealistic commercial fashion campaign, elegant social-media model pose.
+COMPOSITION: preserve the original garment background and floor.
+QUALITY: high detail, sharp fabric texture, natural proportions.
+PRESERVE: exact garment color, cut, pattern, stitching, and all visible details.
+OUTPUT: premium fashion advertisement image.`;
         const videoPrompts = {
-            main: `TYPE: fashion showcase video\nSUBJECT: adult fashion model wearing the provided garment\nACTION: present the garment with smooth elegant movements; transition smoothly between garment colors\nCAMERA: professional fashion camera, steady cinematic motion\nENVIRONMENT: preserve the same background and floor as the reference\nAUDIO: no speech, tasteful oriental instrumental music\nSTYLE: realistic, premium commercial, clean editing`
+            main: `TYPE: fashion showcase video
+SUBJECT: adult fashion model wearing the provided garment
+ACTION: present the garment with smooth elegant movements; transition smoothly between garment colors
+CAMERA: professional fashion camera, steady cinematic motion
+ENVIRONMENT: preserve the same background and floor as the reference
+AUDIO: no speech, tasteful oriental instrumental music
+STYLE: realistic, premium commercial, clean editing`
         };
-
-        let selectedId = 'slim';
-
         function isEn() {
             return document.body.classList.contains('en-mode');
         }
-
-        function getImagePrompt() {
-            return (imageBase[selectedId] || imageBase.slim) + imageEnd;
-        }
-
-        function renderPrompts() {
-            const grid = document.getElementById('promptGrid');
-            grid.innerHTML = bodyTypes.map(p => {
-                const title = isEn() ? p.en : p.ar;
-                return `<div class="prompt-card ${p.id === selectedId ? 'active' : ''}" onclick="selectType('${p.id}')">
-                    <div class="check">✓</div>
-                    <h3>${title}</h3>
-                    <div class="masked">••••••••••••••••••••</div>
-                </div>`;
-            }).join('');
-        }
-
-        
-
-        
-
-
-
-        function selectType(id) {
-            selectedId = id;
-            renderPrompts();
-            document.getElementById('status').textContent = '';
-        }
-
-        
 
         function shareSite() {
             const data = {
@@ -999,7 +952,6 @@
                 btnEn.classList.remove('active');
                 btnAr.classList.add('active');
             }
-            renderPrompts();
             document.getElementById('status').textContent = '';
         }
 
@@ -1026,6 +978,7 @@
 
 
         function openPromptStudio() {
+            if (!requireAccount()) return;
             document.getElementById('promptStudioModal').classList.add('active');
         }
 
@@ -1352,7 +1305,7 @@
             if (!requireAccount()) return;
             const text = type === 'video'
                 ? videoPrompts.main
-                : getImagePrompt();
+                : imagePrompt;
             const name = type === 'video'
                 ? (isEn() ? 'Video prompt' : 'برومبت الفيديو')
                 : (isEn() ? 'Image prompt' : 'برومبت الصورة');
@@ -1393,7 +1346,6 @@
         updatePaidUI();
         verifyCentral(); // تحقق مركزي من الاشتراك عبر Supabase
 
-        renderPrompts();
     </script>
 
     <!-- نافذة مراسلتنا -->
