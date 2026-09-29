@@ -776,6 +776,10 @@
             <span class="ar">🎬 نسخ برومبت الفيديو</span>
             <span class="en">🎬 Copy Video Prompt</span>
         </button>
+        <button type="button" class="btn btn-outline" onclick="openPromptStudio()">
+            <span class="ar">✨ استوديو التوليد</span>
+            <span class="en">✨ Generation Studio</span>
+        </button>
         <button type="button" class="btn btn-outline" onclick="openContact()">
             <span class="ar">💬 راسلنا</span>
             <span class="en">💬 Contact Us</span>
@@ -853,6 +857,31 @@
             <button type="button" class="btn btn-gold" style="width:100%;margin-top:1.2rem" onclick="submitPayment(this)">
                 <span class="ar">تأكيد الاشتراك</span>
                 <span class="en">Confirm Subscription</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Generation Studio information -->
+    <div class="modal-overlay" id="promptStudioModal" role="dialog" aria-modal="true" aria-labelledby="promptStudioTitle">
+        <div class="modal" style="text-align:center">
+            <button type="button" class="modal-close" onclick="closePromptStudio()" aria-label="Close">×</button>
+            <h2 id="promptStudioTitle">
+                <span class="ar">✨ استوديو التوليد</span>
+                <span class="en">✨ Generation Studio</span>
+            </h2>
+            <div class="gold-note" style="line-height:2;text-align:right">
+                <p class="ar">حمّلي تطبيق <strong>Google Flow</strong> من Google Play، ثم استخدمي البرومبت الذي نسختِه من هذا الموقع لتوليد الصورة أو الفيديو.</p>
+                <p class="en">Download <strong>Google Flow</strong> from Google Play, then use the prompt copied from this website to generate your image or video.</p>
+                <p class="ar" style="color:#f0c75e"><strong>⚠️ تنبيه:</strong> البرومبت الذي تحصلين عليه خاص باشتراكك. لا تشاركيه أو تنشريه.</p>
+                <p class="en" style="color:#f0c75e"><strong>⚠️ Notice:</strong> Your prompt is private to your subscription. Do not share or publish it.</p>
+            </div>
+            <a class="btn btn-gold" href="https://play.google.com/store/apps/details?id=com.google.android.apps.labs.whisk" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;margin-top:1.2rem">
+                <span class="ar">📲 تحميل Google Flow من Google Play</span>
+                <span class="en">📲 Download Google Flow from Google Play</span>
+            </a>
+            <button type="button" class="btn btn-outline" onclick="closePromptStudio()" style="width:100%;margin-top:.7rem">
+                <span class="ar">العودة إلى البرومبتات</span>
+                <span class="en">Back to prompts</span>
             </button>
         </div>
     </div>
@@ -995,6 +1024,14 @@
 
 
 
+
+        function openPromptStudio() {
+            document.getElementById('promptStudioModal').classList.add('active');
+        }
+
+        function closePromptStudio() {
+            document.getElementById('promptStudioModal').classList.remove('active');
+        }
 
         function openSubscribe() {
             setPayMethod('transfer');

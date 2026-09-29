@@ -39,3 +39,8 @@ python3 -m http.server 8787 --bind 0.0.0.0
 - يوجد زران فقط لنسخ برومبت الصورة وبرومبت الفيديو.
 - النسخ مقفول حتى يثبت الاشتراك من Supabase.
 - البرومبتات تُخرج بصيغة منظمة `KEY: VALUE` مناسبة لأدوات توليد الصور والفيديو.
+
+## استوديو التوليد
+
+زر **استوديو التوليد** يعرض تعليمات استخدام البرومبت الخاص بالمشترك، ورابط تطبيق Google Flow الرسمي على Google Play:
+`https://play.google.com/store/apps/details?id=com.google.android.apps.labs.whisk`
