@@ -764,17 +764,17 @@
             <span class="ar">⭐ اشترك الآن — 15$ أو 3500 د.ج / سنة</span>
             <span class="en">⭐ Subscribe Now — $15 or 3500 DZD / year</span>
         </button>
-        <button type="button" class="btn btn-gold" onclick="copyPrompt('video-hijab')">
-            <span class="ar">📋 نسخ برومبت الفيديو — محجبات 🧕</span>
-            <span class="en">📋 Copy Video Prompt — Hijab 🧕</span>
+        <div class="prompt-actions-title">
+            <span class="ar">بعد الاشتراك، اختاري نوع الجسم ثم انسخي البرومبت المطلوب</span>
+            <span class="en">After subscribing, choose a body type and copy the prompt you need</span>
+        </div>
+        <button type="button" class="btn btn-gold" onclick="copyPrompt('image')">
+            <span class="ar">🖼️ نسخ برومبت الصورة</span>
+            <span class="en">🖼️ Copy Image Prompt</span>
         </button>
-        <button type="button" class="btn btn-outline" onclick="copyPrompt('video-free')">
-            <span class="ar">📋 نسخ برومبت الفيديو — بدون حجاب 💃</span>
-            <span class="en">📋 Copy Video Prompt — No Hijab 💃</span>
-        </button>
-        <button type="button" class="btn btn-outline" onclick="openApp()">
-            <span class="ar">🚀 افتح التطبيق</span>
-            <span class="en">🚀 Open the App</span>
+        <button type="button" class="btn btn-outline" onclick="copyPrompt('video')">
+            <span class="ar">🎬 نسخ برومبت الفيديو</span>
+            <span class="en">🎬 Copy Video Prompt</span>
         </button>
         <button type="button" class="btn btn-outline" onclick="openContact()">
             <span class="ar">💬 راسلنا</span>
@@ -798,7 +798,6 @@
             </div>
             <ul class="features">
                 <li>✓ <span class="ar">نسخ كل البرومبتات</span><span class="en">Copy all prompts</span></li>
-                <li>✓ <span class="ar">فتح التطبيق مباشرة</span><span class="en">Open the app directly</span></li>
                 <li>✓ <span class="ar">تحديثات البرومبتات</span><span class="en">Prompt updates</span></li>
                 <li>✓ <span class="ar">دعم فني</span><span class="en">Support</span></li>
             </ul>
@@ -806,7 +805,7 @@
             <label><span class="ar">اختر طريقة الدفع</span><span class="en">Choose payment method</span></label>
             <div class="success-banner" id="paySuccess">
                 <span class="ar">✅ تم استلام الدفع! سيتم تفعيل الاشتراك بعد مراجعة الإدارة.</span>
-                <span class="en">✅ Payment successful! Your subscription is now active.</span>
+                <span class="en">✅ Payment received! Activation follows admin review.</span>
             </div>
 
             <div class="pay-methods" style="flex-wrap:wrap">
@@ -858,65 +857,6 @@
         </div>
     </div>
 
-    <!-- AI Studio -->
-    <div class="studio-overlay" id="studioOverlay" role="dialog" aria-modal="true" aria-labelledby="studioTitle">
-        <div class="studio-inner">
-            <div class="studio-head">
-                <button type="button" class="modal-close" onclick="closeStudio()" aria-label="Close">×</button>
-                <h2 id="studioTitle"><span class="ar">استوديو عارضتي</span><span class="en">MyModel Studio</span></h2>
-                <p class="studio-tip"><span class="ar">ارفعي صورة، اكتبي البرومبت، وشاهدي النتيجة هنا دون مغادرة الموقع.</span><span class="en">Upload an image, write a prompt, and see the result here without leaving the site.</span></p>
-            </div>
-            <div class="studio-grid">
-                <section class="studio-step">
-                    <h3>1 <span class="ar">صورة الملابس</span><span class="en">Clothing photo</span></h3>
-                    <label class="studio-upload" for="studioPhotoInput" id="photoZone">
-                        <span class="ar">اختاري صورة من جهازك</span><span class="en">Choose a photo</span>
-                    </label>
-                    <input id="studioPhotoInput" type="file" accept="image/*" hidden onchange="studioPhoto(this)">
-                </section>
-                <section class="studio-step">
-                    <h3>2 <span class="ar">برومبت الصورة</span><span class="en">Image prompt</span></h3>
-                    <textarea class="studio-textarea" id="imgPromptBox" rows="8" placeholder="اكتبي وصف الصورة..."></textarea>
-                    <button type="button" class="btn btn-gold" id="genBtn" onclick="genImage()"><span class="ar">توليد صورة تجريبية</span><span class="en">Generate preview</span></button>
-                    <div id="genStatus" class="studio-tip" style="display:none"><span class="ar">جاري التوليد...</span><span class="en">Generating...</span></div>
-                </section>
-                <section class="studio-step">
-                    <h3>3 <span class="ar">برومبت الفيديو</span><span class="en">Video prompt</span></h3>
-                    <textarea class="studio-textarea" id="studioPromptBox" rows="8" placeholder="برومبت الفيديو"></textarea>
-                    <div class="studio-btns">
-                        <button type="button" class="btn btn-outline" onclick="setVideoPrompt('hijab')"><span class="ar">محجبات</span><span class="en">Hijab</span></button>
-                        <button type="button" class="btn btn-outline" onclick="setVideoPrompt('free')"><span class="ar">بدون حجاب</span><span class="en">No hijab</span></button>
-                        <button type="button" class="btn btn-gold" onclick="studioCopyPrompt()"><span class="ar">نسخ</span><span class="en">Copy</span></button>
-                    </div>
-                </section>
-                <section class="studio-step">
-                    <h3>4 <span class="ar">المعرض</span><span class="en">Gallery</span></h3>
-                    <div class="result-grid" id="resultGrid" aria-live="polite"></div>
-                </section>
-            </div>
-            <p class="studio-tip"><span class="ar">التوليد يتم عبر خادم آمن، ولا يتم كشف مفتاح OpenAI في المتصفح.</span><span class="en">Generation runs through a secure server; your OpenAI key is never exposed in the browser.</span></p>
-        </div>
-    </div>
-
-    <!-- Google Flow: attempted in-site embed with same-tab fallback because Flow blocks cross-origin iframes. -->
-    <div class="modal-overlay flow-overlay" id="flowModal" role="dialog" aria-modal="true" aria-labelledby="flowTitle">
-        <div class="modal">
-            <div class="flow-head">
-                <h2 id="flowTitle"><span class="ar">Google Flow داخل الموقع</span><span class="en">Google Flow in this site</span></h2>
-                <button type="button" class="modal-close" onclick="closeFlow()" aria-label="Close">×</button>
-            </div>
-            <div class="flow-frame-wrap">
-                <iframe id="flowFrame" title="Google Flow" loading="lazy" referrerpolicy="no-referrer" allow="camera; microphone; clipboard-read; clipboard-write"></iframe>
-                <div class="flow-fallback" id="flowFallback">
-                    <strong><span class="ar">Google Flow يمنع التضمين داخل المواقع الخارجية.</span><span class="en">Google Flow blocks embedding on external websites.</span></strong>
-                    <p><span class="ar">هذا بسبب حماية Google الأمنية، وليس خطأً في موقعك. يمكنك فتحه في نفس الصفحة بدل إنشاء نافذة جديدة.</span><span class="en">This is enforced by Google security, not by your site. You can continue in the same tab without opening a new window.</span></p>
-                    <button type="button" class="btn btn-gold" onclick="openFlowSameTab()"><span class="ar">المتابعة في نفس الصفحة</span><span class="en">Continue in this tab</span></button>
-                </div>
-            </div>
-            <div class="flow-notice"><span class="ar">سيتم تحميل Flow عند الطلب. قد يمنع Google عرضه داخل iframe.</span><span class="en">Flow loads on demand. Google may block rendering inside an iframe.</span></div>
-        </div>
-    </div>
-
     <footer>
         <div style="margin-bottom:0.8rem">
             <a href="#" onclick="adminLogin();return false;" style="color:var(--muted);font-size:0.8rem;text-decoration:none;border:1px solid var(--border);padding:0.3rem 1rem;border-radius:50px">
@@ -931,7 +871,6 @@
         const PAYPAL_CLIENT_ID = 'BAAfLmGRVCpE3Vj6kSTEy1UddEOwVqZREEUg_V7iThqyzDQj1aovwHiAF_koGm9hzS3a945hb4PrzMEQQY'; // PayPal Live Client ID
         const PRICE_USD = '15.00';        // سعر PayPal
         const PRICE_GOLD_DZD = 3500;      // سعر البطاقة الذهبية
-        const GOOGLE_FLOW_URL = 'https://flow.google.com/'; // Google يمنع iframe عبر X-Frame-Options
         // 🔧 أداة الذكاء الاصطناعي المدمجة داخل الموقع (تضمين رسمي قانوني من Hugging Face)
         // يمكنك استبدالها بأي Space يدعم التضمين من: huggingface.co/spaces
         const CCP_NUMBER = '0025148966/05';   // رقم CCP لاستقبال التحويلات
@@ -939,7 +878,6 @@
         const WHATSAPP_NUMBER = '';            // مثال: '213550123456' — لزر واتساب في صفحة التحويل // ⚠️ غيّر رمز الإدارة (نفس القيمة في admin.html)
         const SUPABASE_URL = 'https://mkgsewcvfftilcdatgqg.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_sSZbTaNKIwMEzhPQhPnE3g_Xj-xsNZP'; // Publishable (آمن للعرض)
-        const GENERATE_IMAGE_URL = SUPABASE_URL + '/functions/v1/generate-image';
         // =======================================================
         const bodyTypes = [
             { id: 'slim', ar: 'نحيفة', en: 'Slim' },
@@ -950,24 +888,20 @@
             { id: 'average', ar: 'معتدلة', en: 'Average' }
         ];
 
+        // Structured prompts: readable to people, predictable for image/video tools.
         const imageBase = {
-            slim: 'ركب الفستان على هذه العارضة النحيفة',
-            curvy: 'ركب الفستان على هذه العارضة العريضة',
-            plus: 'ركب الفستان على هذه العارضة السمينة',
-            tall: 'ركب الفستان على هذه العارضة الطويلة',
-            short: 'ركب الفستان على هذه العارضة القصيرة',
-            average: 'ركب الفستان على هذه العارضة ذات الجسم المعتدل'
+            slim: 'BODY_TYPE: slim\nMODEL: adult female fashion model, slim body',
+            curvy: 'BODY_TYPE: curvy\nMODEL: adult female fashion model, curvy body',
+            plus: 'BODY_TYPE: plus-size\nMODEL: adult female fashion model, plus-size body',
+            tall: 'BODY_TYPE: tall\nMODEL: adult female fashion model, tall body',
+            short: 'BODY_TYPE: petite\nMODEL: adult female fashion model, petite body',
+            average: 'BODY_TYPE: average\nMODEL: adult female fashion model, average body'
         };
 
-        const imageEnd = ` اجعلها ترتديه بشكل واقعي وحقيقي تقف بأناقة مثل عارضات انستقرام بنفس خلفية وأرضية الفستان في الصورة الأولى بصورة جودة عالية كأنها صورة إعلانية
-_____________
-حافظ على لون وتفاصيل الفستان بدقة`;
+        const imageEnd = `\nTASK: dress the model in the provided garment.\nSTYLE: photorealistic commercial fashion campaign, elegant Instagram model pose.\nCOMPOSITION: preserve the original garment background and floor.\nQUALITY: high detail, sharp fabric texture, natural proportions.\nPRESERVE: exact garment color, cut, pattern, stitching, and all visible details.\nOUTPUT: premium fashion advertisement image.`;
 
         const videoPrompts = {
-            hijab: `فيديو بمونتاج احترافي العارضة تعرض الفستان للمحجبات بشكل واقعي انتقال سلس من لون الى لون بنفس الخلفية والارضية
-دون كلام و موسيقى شرقية`,
-            free: `فيديو بمونتاج احترافي العارضة تعرض الفستان بشكل واقعي انتقال سلس من لون الى لون بنفس الخلفية والارضية
-دون كلام و موسيقى شرقية`
+            main: `TYPE: fashion showcase video\nSUBJECT: adult fashion model wearing the provided garment\nACTION: present the garment with smooth elegant movements; transition smoothly between garment colors\nCAMERA: professional fashion camera, steady cinematic motion\nENVIRONMENT: preserve the same background and floor as the reference\nAUDIO: no speech, tasteful oriental instrumental music\nSTYLE: realistic, premium commercial, clean editing`
         };
 
         let selectedId = 'slim';
@@ -982,16 +916,12 @@ _____________
 
         function renderPrompts() {
             const grid = document.getElementById('promptGrid');
-            const copyLabel = isEn() ? 'Copy' : 'نسخ';
             grid.innerHTML = bodyTypes.map(p => {
                 const title = isEn() ? p.en : p.ar;
                 return `<div class="prompt-card ${p.id === selectedId ? 'active' : ''}" onclick="selectType('${p.id}')">
                     <div class="check">✓</div>
                     <h3>${title}</h3>
                     <div class="masked">••••••••••••••••••••</div>
-                    <button type="button" class="copy-btn" onclick="event.stopPropagation(); copyCardPrompt('${p.id}', this)">
-                        📋 ${copyLabel}
-                    </button>
                 </div>`;
             }).join('');
         }
@@ -1062,18 +992,9 @@ _____________
             return false;
         }
 
-        function openApp() {
-            if (!requireAccount()) return;
-            // Google Flow blocks iframe embedding, so navigate directly in the same tab.
-            window.location.assign(GOOGLE_FLOW_URL);
-        }
-        function closeFlow() {
-            document.getElementById('flowModal').classList.remove('active');
-            document.body.style.overflow = '';
-        }
-        function openFlowSameTab() {
-            window.location.assign(GOOGLE_FLOW_URL);
-        }
+
+
+
 
         function openSubscribe() {
             setPayMethod('transfer');
@@ -1125,124 +1046,6 @@ _____________
                 alert(isEn() ? 'Could not send request. Try again.' : 'تعذر إرسال الطلب. حاول مجدداً.');
             }
         }
-
-        // ===== الاستوديو المدمج =====
-        function openStudio() {
-            try {
-                const ip = document.getElementById('imgPromptBox');
-                if (ip && !ip.dataset.touched) ip.value = getImagePrompt();
-            } catch {}
-            if (!document.getElementById('studioPromptBox').value) {
-                document.getElementById('studioPromptBox').value = videoPrompts.hijab;
-            }
-            document.getElementById('studioOverlay').classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-        function closeStudio() {
-            document.getElementById('studioOverlay').classList.remove('show');
-            document.body.style.overflow = '';
-        }
-        let studioResults = [];
-        let selectedStudioImageData = '';
-
-        function studioPhoto(input) {
-            const f = input.files && input.files[0];
-            if (!f || !f.type.startsWith('image/')) return;
-            if (f.size > 10 * 1024 * 1024) {
-                alert(isEn() ? 'Choose an image smaller than 10 MB.' : 'اختاري صورة أصغر من 10 ميغابايت.');
-                input.value = '';
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = () => {
-                selectedStudioImageData = String(reader.result || '');
-                const zone = document.getElementById('photoZone');
-                zone.replaceChildren();
-                const img = document.createElement('img');
-                img.src = selectedStudioImageData; img.alt = isEn() ? 'Selected clothing photo' : 'صورة الملابس المختارة';
-                const note = document.createElement('div');
-                note.className = 'uz-text';
-                note.textContent = isEn() ? '✓ Photo ready — tap to change' : '✓ تم رفع الصورة — اضغط للتغيير';
-                zone.append(img, note);
-            };
-            reader.readAsDataURL(f);
-        }
-
-        function studioResult(input) {
-            const f = input.files && input.files[0];
-            if (!f) return;
-            const url = URL.createObjectURL(f);
-            studioResults.push(url);
-            renderResults();
-        }
-
-        function renderResults() {
-            const g = document.getElementById('resultGrid');
-            g.replaceChildren();
-            studioResults.forEach((u, i) => {
-                const img = document.createElement('img');
-                img.src = u; img.alt = (isEn() ? 'Generated result ' : 'نتيجة التوليد ') + (i + 1);
-                img.loading = 'lazy';
-                img.addEventListener('click', () => window.open(u, '_blank', 'noopener,noreferrer'));
-                g.appendChild(img);
-            });
-        }
-
-        // التوليد الحقيقي يتم عبر Supabase Edge Function حتى يبقى مفتاح OpenAI على الخادم.
-        async function genImage() {
-            const prompt = (document.getElementById('imgPromptBox').value || '').trim();
-            const btn = document.getElementById('genBtn');
-            const status = document.getElementById('genStatus');
-            if (prompt.length < 5) { alert(isEn() ? 'Write a prompt first.' : 'اكتبي البرومبت أولاً.'); return; }
-            if (!selectedStudioImageData) { alert(isEn() ? 'Upload an image first.' : 'ارفعي صورة أولاً.'); return; }
-            btn.disabled = true;
-            status.style.display = 'block';
-            try {
-                const r = await fetch(GENERATE_IMAGE_URL, {
-                    method: 'POST',
-                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt, imageData: selectedStudioImageData })
-                });
-                const data = await r.json().catch(() => ({}));
-                if (!r.ok || !data.imageData) throw new Error(data.detail || data.error || 'Generation failed');
-                studioResults.unshift(data.imageData);
-                renderResults();
-                document.getElementById('status').textContent = isEn() ? '✅ Image generated below.' : '✅ تم توليد الصورة بالأسفل.';
-            } catch (e) {
-                alert((isEn() ? 'Generation failed: ' : 'فشل التوليد: ') + e.message);
-            } finally {
-                btn.disabled = false;
-                status.style.display = 'none';
-            }
-        }
-
-        function setVideoPrompt(kind) {
-            document.getElementById('studioPromptBox').value = videoPrompts[kind] || '';
-        }
-
-        function studioCopyPrompt() {
-            const ta = document.getElementById('studioPromptBox');
-            const text = ta ? ta.value : '';
-            navigator.clipboard.writeText(text).then(() => {
-                ta.style.borderColor = '#2e7d32';
-                setTimeout(() => { ta.style.borderColor = ''; }, 1200);
-            }).catch(() => {
-                ta.select();
-                document.execCommand('copy');
-            });
-        }
-        // استقبال المستخدم عند عودته من Flow
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) { window._flowAway = true; return; }
-            if (window._flowAway && isPaid()) {
-                window._flowAway = false;
-                const st = document.getElementById('status');
-                if (st) st.textContent = isEn()
-                    ? '👋 Welcome back! Need another prompt? Pick one above and copy it.'
-                    : '👋 عدت! هل أنجزت؟ اختر برومبت آخر من الأعلى وانسخه.';
-            }
-        });
-        // ============================
 
         function openContact() { document.getElementById('contactModal').classList.add('active'); }
         function closeContact() { document.getElementById('contactModal').classList.remove('active'); }
@@ -1508,62 +1311,31 @@ _____________
             alert(msg);
         }
 
-        // Unlock real copy when paid
-        function copyCardPrompt(id, btn) {
-            if (!requireAccount()) return;
-            selectedId = id;
-            renderPrompts();
-            const text = getImagePrompt();
-            const name = isEn()
-                ? bodyTypes.find(b => b.id === id).en
-                : bodyTypes.find(b => b.id === id).ar;
-            navigator.clipboard.writeText(text).then(() => {
-                const original = btn.innerHTML;
-                btn.classList.add('copied');
-                btn.innerHTML = isEn() ? '✓ Copied' : '✓ تم النسخ';
-                document.getElementById('status').textContent = isEn()
-                    ? '✅ ' + name + ' prompt copied'
-                    : '✅ تم نسخ برومبت ' + name;
-                setTimeout(() => {
-                    btn.classList.remove('copied');
-                    btn.innerHTML = original;
-                }, 2000);
-            }).catch(() => {
-                const ta = document.createElement('textarea');
-                ta.value = text;
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand('copy');
-                document.body.removeChild(ta);
-                document.getElementById('status').textContent = isEn()
-                    ? '✅ ' + name + ' prompt copied'
-                    : '✅ تم نسخ برومبت ' + name;
-            });
-        }
-
         function copyPrompt(type) {
             if (!requireAccount()) return;
-            const text = (type === 'video-hijab') ? videoPrompts.hijab
-                       : (type === 'video-free') ? videoPrompts.free
-                       : getImagePrompt();
-            const name = (type === 'video-hijab') ? (isEn() ? 'Video (Hijab)' : 'الفيديو — محجبات')
-                       : (type === 'video-free') ? (isEn() ? 'Video (No Hijab)' : 'الفيديو — بدون حجاب')
-                : (isEn() ? bodyTypes.find(b => b.id === selectedId).en : bodyTypes.find(b => b.id === selectedId).ar);
-            navigator.clipboard.writeText(text).then(() => {
+            const text = type === 'video'
+                ? videoPrompts.main
+                : getImagePrompt();
+            const name = type === 'video'
+                ? (isEn() ? 'Video prompt' : 'برومبت الفيديو')
+                : (isEn() ? 'Image prompt' : 'برومبت الصورة');
+            const done = () => {
                 document.getElementById('status').textContent = isEn()
-                    ? '✅ ' + name + ' prompt copied'
-                    : '✅ تم نسخ برومبت ' + name;
-            }).catch(() => {
-                const ta = document.createElement('textarea');
-                ta.value = text;
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand('copy');
-                document.body.removeChild(ta);
-                document.getElementById('status').textContent = isEn()
-                    ? '✅ ' + name + ' prompt copied'
-                    : '✅ تم نسخ برومبت ' + name;
-            });
+                    ? '✅ ' + name + ' copied'
+                    : '✅ تم نسخ ' + name;
+            };
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+            } else fallbackCopy(text, done);
+        }
+
+        function fallbackCopy(text, done) {
+            const ta = document.createElement('textarea');
+            ta.value = text; ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); } finally { document.body.removeChild(ta); }
+            done();
         }
 
         // Never trust a URL parameter as proof of payment.
