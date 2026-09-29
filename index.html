@@ -37,12 +37,12 @@
             line-height: 1.6;
             min-height: 100vh;
         }
-        .en { display: none; }
-        body.en-mode .ar { display: none !important; }
-        body.en-mode .en { display: inline !important; }
-        body.en-mode h1 .en,
-        body.en-mode h2 .en,
-        body.en-mode .example-title .en { display: block !important; }
+        .en, .fr { display: none; }
+        body.en-mode .ar, body.fr-mode .ar { display: none !important; }
+        body.en-mode .en, body.fr-mode .fr { display: inline !important; }
+        body.en-mode h1 .en, body.fr-mode h1 .fr,
+        body.en-mode h2 .en, body.fr-mode h2 .fr,
+        body.en-mode .example-title .en, body.fr-mode .example-title .fr { display: block !important; }
 
         header {
             position: sticky; top: 0; z-index: 100;
@@ -707,6 +707,7 @@
             <div class="lang-switch">
                 <button type="button" class="lang-btn active" id="btnAr" onclick="setLang('ar')">عربي</button>
                 <button type="button" class="lang-btn" id="btnEn" onclick="setLang('en')">EN</button>
+                <button type="button" class="lang-btn" id="btnFr" onclick="setLang('fr')">FR</button>
             </div>
         </div>
     </header>
@@ -716,11 +717,11 @@
             <div class="hero-text">
                 <h1>
                     <span class="ar">حوِّل ملابسك إلى جلسة تصوير احترافية في محلك</span>
-                    <span class="en">Turn Your Shop's Clothes into a Professional Photoshoot</span>
+                    <span class="en">Turn Your Shop's Clothes into a Professional Photoshoot</span><span class="fr">Transformez les vêtements de votre boutique en séance photo professionnelle</span>
                 </h1>
                 <p>
                     <span class="ar">ارفع صورة أي قطعة ملابس من محلك وشاهدها على عارضة أزياء افتراضية خلال ثوانٍ — اختر البرومبت، انسخه، وابدأ</span>
-                    <span class="en">Upload any clothing photo from your shop and see it on a virtual fashion model in seconds</span>
+                    <span class="en">Upload any clothing photo from your shop and see it on a virtual fashion model in seconds</span><span class="fr">Importez une photo de vêtement et voyez-la sur un mannequin virtuel en quelques secondes</span>
                 </p>
             </div>
             <div class="hero-img">
@@ -732,7 +733,7 @@
     <section class="examples">
         <div class="example-title">
             <span class="ar">أمثلة التحويل</span>
-            <span class="en">Transformation Examples</span>
+            <span class="en">Transformation Examples</span><span class="fr">Exemples de transformation</span>
         </div>
         <div class="examples-grid">
             <div class="ex-card">
@@ -750,31 +751,31 @@
     <section class="actions">
         <button type="button" class="btn btn-outline" onclick="loginWithEmail()" style="margin-bottom:0.85rem">
             <span class="ar">📧 عندي اشتراك — فعّل بإيميلي</span>
-            <span class="en">📧 I have a subscription — activate by email</span>
+            <span class="en">📧 I have a subscription — activate by email</span><span class="fr">📧 J’ai un abonnement — activer par e-mail</span>
         </button>
         <button type="button" class="btn btn-subscribe" onclick="openSubscribe()" id="btnSubscribe">
             <span class="ar">⭐ اشترك الآن — 15$ أو 3500 د.ج / سنة</span>
-            <span class="en">⭐ Subscribe Now — $15 or 3500 DZD / year</span>
+            <span class="en">⭐ Subscribe Now — $15 or 3500 DZD / year</span><span class="fr">⭐ S’abonner — 15 $ ou 3500 DZD / an</span>
         </button>
         <div class="prompt-actions-title">
             <span class="ar">بعد الاشتراك، انسخي برومبت الصورة أو الفيديو ثم افتحي الاستوديو</span>
-            <span class="en">After subscribing, copy the image or video prompt, then open the studio</span>
+            <span class="en">After subscribing, copy the image or video prompt, then open the studio</span><span class="fr">Après l’abonnement, copiez le prompt image ou vidéo, puis ouvrez le studio</span>
         </div>
         <button type="button" class="btn btn-gold" onclick="copyPrompt('image')">
             <span class="ar">🖼️ نسخ برومبت الصورة</span>
-            <span class="en">🖼️ Copy Image Prompt</span>
+            <span class="en">🖼️ Copy Image Prompt</span><span class="fr">🖼️ Copier le prompt image</span>
         </button>
         <button type="button" class="btn btn-outline" onclick="copyPrompt('video')">
             <span class="ar">🎬 نسخ برومبت الفيديو</span>
-            <span class="en">🎬 Copy Video Prompt</span>
+            <span class="en">🎬 Copy Video Prompt</span><span class="fr">🎬 Copier le prompt vidéo</span>
         </button>
         <button type="button" class="btn btn-outline" onclick="openPromptStudio()">
             <span class="ar">✨ استوديو التوليد</span>
-            <span class="en">✨ Generation Studio</span>
+            <span class="en">✨ Generation Studio</span><span class="fr">✨ Studio de génération</span>
         </button>
         <button type="button" class="btn btn-outline" onclick="openContact()">
             <span class="ar">💬 راسلنا</span>
-            <span class="en">💬 Contact Us</span>
+            <span class="en">💬 Contact Us</span><span class="fr">💬 Nous contacter</span>
         </button>
         <div class="status" id="status"></div>
     </section>
@@ -785,30 +786,30 @@
             <button type="button" class="modal-close" onclick="closeSubscribe()">×</button>
             <h2>
                 <span class="ar">اشتراك عارضتي</span>
-                <span class="en">MyModel Subscription</span>
+                <span class="en">MyModel Subscription</span><span class="fr">Abonnement MyModel</span>
             </h2>
-            <div class="price">15 <span>$ / <span class="ar">سنة كاملة</span><span class="en">year</span></span></div>
+            <div class="price">15 <span>$ / <span class="ar">سنة كاملة</span><span class="en">year</span><span class="fr">an</span></span></div>
             <div style="text-align:center">
                 <span class="price-badge">15$</span>
-                <span class="price-badge">💳 3500 <span class="ar">د.ج</span><span class="en">DZD</span></span>
+                <span class="price-badge">💳 3500 <span class="ar">د.ج</span><span class="en">DZD</span><span class="fr">DZD</span></span>
             </div>
             <ul class="features">
-                <li>✓ <span class="ar">نسخ كل البرومبتات</span><span class="en">Copy all prompts</span></li>
-                <li>✓ <span class="ar">تحديثات البرومبتات</span><span class="en">Prompt updates</span></li>
-                <li>✓ <span class="ar">دعم فني</span><span class="en">Support</span></li>
+                <li>✓ <span class="ar">نسخ كل البرومبتات</span><span class="en">Copy all prompts</span><span class="fr">Copier tous les prompts</span></li>
+                <li>✓ <span class="ar">تحديثات البرومبتات</span><span class="en">Prompt updates</span><span class="fr">Mises à jour des prompts</span></li>
+                <li>✓ <span class="ar">دعم فني</span><span class="en">Support</span><span class="fr">Assistance</span></li>
             </ul>
 
-            <label><span class="ar">اختر طريقة الدفع</span><span class="en">Choose payment method</span></label>
+            <label><span class="ar">اختر طريقة الدفع</span><span class="en">Choose payment method</span><span class="fr">Choisissez un mode de paiement</span></label>
             <div class="success-banner" id="paySuccess">
                 <span class="ar">✅ تم استلام الدفع! سيتم تفعيل الاشتراك بعد مراجعة الإدارة.</span>
-                <span class="en">✅ Payment received! Activation follows admin review.</span>
+                <span class="en">✅ Payment received! Activation follows admin review.</span><span class="fr">✅ Paiement reçu ! L’activation sera effectuée après vérification.</span>
             </div>
 
             <div class="pay-methods" style="flex-wrap:wrap">
                 <button type="button" class="pay-method active" id="payTransfer" onclick="setPayMethod('transfer')">
                     <span class="pm-icon">📲</span>
-                    <span class="pm-name"><span class="ar">بريدي موب / تحويل مباشر</span><span class="en">BaridiMob / Direct Transfer</span></span>
-                    <span class="pm-price">3500 <span class="ar">د.ج</span><span class="en">DZD</span></span>
+                    <span class="pm-name"><span class="ar">بريدي موب / تحويل مباشر</span><span class="en">BaridiMob / Direct Transfer</span><span class="fr">BaridiMob / Virement direct</span></span>
+                    <span class="pm-price">3500 <span class="ar">د.ج</span><span class="en">DZD</span><span class="fr">DZD</span></span>
                 </button>
                 <button type="button" class="pay-method" id="payCard" onclick="setPayMethod('card')">
                     <span class="pm-icon">🅿️</span>
@@ -822,17 +823,17 @@
                 <div style="background:rgba(212,175,55,0.08);border:1px dashed var(--border);border-radius:12px;padding:1rem;margin-top:1rem;text-align:center">
                     <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.3rem">
                         <span class="ar">الخطوة 1 — حوّل 3500 د.ج عبر تطبيق بريدي موب أو من أي مكتب بريد إلى:</span>
-                        <span class="en">Step 1 — Transfer 3500 DZD via BaridiMob app or any post office to:</span>
+                        <span class="en">Step 1 — Transfer 3500 DZD via BaridiMob app or any post office to:</span><span class="fr">Étape 1 — Transférez 3500 DZD via BaridiMob ou un bureau de poste vers :</span>
                     </div>
                     <div style="font-size:1.3rem;font-weight:800;color:var(--gold);letter-spacing:1px;direction:ltr">0025148966/05</div>
                 </div>
                 <div style="margin-top:0.9rem;font-size:0.85rem;color:var(--muted);text-align:center">
                     <span class="ar">الخطوة 2 — أدخل بياناتك ليصل الطلب إلى الإدارة للمراجعة:</span>
-                    <span class="en">Step 2 — Enter your details so the admin can review your request:</span>
+                    <span class="en">Step 2 — Enter your details so the admin can review your request:</span><span class="fr">Étape 2 — Saisissez vos informations pour vérification :</span>
                 </div>
-                <label style="margin-top:0.5rem"><span class="ar">إيميلك</span><span class="en">Your email</span></label>
+                <label style="margin-top:0.5rem"><span class="ar">إيميلك</span><span class="en">Your email</span><span class="fr">Votre e-mail</span></label>
                 <input type="email" id="claimEmail" placeholder="email@example.com" style="width:100%;padding:0.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:#0f0f0f;color:var(--text);font-family:'Cairo',sans-serif;outline:none">
-                <label style="margin-top:0.6rem"><span class="ar">رقم العملية (من وصل بريدي موب)</span><span class="en">Transaction ref (from BaridiMob receipt)</span></label>
+                <label style="margin-top:0.6rem"><span class="ar">رقم العملية (من وصل بريدي موب)</span><span class="en">Transaction ref (from BaridiMob receipt)</span><span class="fr">Référence de transaction (sur le reçu BaridiMob)</span></label>
                 <input type="text" id="claimRef" placeholder="XXXXXXXX" style="width:100%;padding:0.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:#0f0f0f;color:var(--text);font-family:'Cairo',sans-serif;outline:none">
             </div>
 
@@ -841,14 +842,14 @@
                 <div id="paypal-button-container"></div>
                 <div class="gold-note" style="text-align:center">
                     <span class="ar">اضغط زر PayPal لإتمام الدفع بأمان — يتم التفعيل بعد مراجعة الإدارة.</span>
-                    <span class="en">Click the PayPal button to pay securely — instant activation.</span>
+                    <span class="en">Click the PayPal button to pay securely — instant activation.</span><span class="fr">Cliquez sur le bouton PayPal pour payer en toute sécurité — activation instantanée.</span>
                 </div>
             </div>
 
             <!-- In-site Golden Card payment form -->
             <button type="button" class="btn btn-gold" style="width:100%;margin-top:1.2rem" onclick="submitPayment(this)">
                 <span class="ar">تأكيد الاشتراك</span>
-                <span class="en">Confirm Subscription</span>
+                <span class="en">Confirm Subscription</span><span class="fr">Confirmer l’abonnement</span>
             </button>
         </div>
     </div>
@@ -859,7 +860,7 @@
             <button type="button" class="modal-close" onclick="closePromptStudio()" aria-label="Close">×</button>
             <h2 id="promptStudioTitle">
                 <span class="ar">✨ استوديو التوليد</span>
-                <span class="en">✨ Generation Studio</span>
+                <span class="en">✨ Generation Studio</span><span class="fr">✨ Studio de génération</span>
             </h2>
             <div class="gold-note" style="line-height:2;text-align:right">
                 <p class="ar">حمّلي تطبيق <strong>Google Flow</strong> من Google Play، ثم استخدمي البرومبت الذي نسختِه من هذا الموقع لتوليد الصورة أو الفيديو.</p>
@@ -869,11 +870,11 @@
             </div>
             <a class="btn btn-gold" href="https://play.google.com/store/apps/details?id=com.google.android.apps.labs.whisk" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;margin-top:1.2rem">
                 <span class="ar">📲 تحميل Google Flow من Google Play</span>
-                <span class="en">📲 Download Google Flow from Google Play</span>
+                <span class="en">📲 Download Google Flow from Google Play</span><span class="fr">📲 Télécharger Google Flow sur Google Play</span>
             </a>
             <button type="button" class="btn btn-outline" onclick="closePromptStudio()" style="width:100%;margin-top:.7rem">
                 <span class="ar">العودة إلى البرومبتات</span>
-                <span class="en">Back to prompts</span>
+                <span class="en">Back to prompts</span><span class="fr">Retour aux prompts</span>
             </button>
         </div>
     </div>
@@ -881,7 +882,7 @@
     <footer>
         <div style="margin-bottom:0.8rem">
             <a href="#" onclick="adminLogin();return false;" style="color:var(--muted);font-size:0.8rem;text-decoration:none;border:1px solid var(--border);padding:0.3rem 1rem;border-radius:50px">
-                ⚙️ <span class="ar">دخول الإدارة</span><span class="en">Admin</span>
+                ⚙️ <span class="ar">دخول الإدارة</span><span class="en">Admin</span><span class="fr">Administration</span>
             </a>
         </div>
         © 2026 عارضتي | MyModel
@@ -937,22 +938,19 @@ STYLE: realistic, premium commercial, clean editing`
         }
 
         function setLang(lang) {
-            const btnAr = document.getElementById('btnAr');
-            const btnEn = document.getElementById('btnEn');
-            if (lang === 'en') {
-                document.body.classList.add('en-mode');
-                document.documentElement.lang = 'en';
-                document.documentElement.dir = 'ltr';
-                btnAr.classList.remove('active');
-                btnEn.classList.add('active');
-            } else {
-                document.body.classList.remove('en-mode');
-                document.documentElement.lang = 'ar';
-                document.documentElement.dir = 'rtl';
-                btnEn.classList.remove('active');
-                btnAr.classList.add('active');
-            }
+            const buttons = { ar: document.getElementById('btnAr'), en: document.getElementById('btnEn'), fr: document.getElementById('btnFr') };
+            document.body.classList.toggle('en-mode', lang === 'en');
+            document.body.classList.toggle('fr-mode', lang === 'fr');
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+            Object.entries(buttons).forEach(([key, button]) => button && button.classList.toggle('active', key === lang));
             document.getElementById('status').textContent = '';
+        }
+        function isFr() { return document.documentElement.lang === 'fr'; }
+        function tr(ar, en, fr) { return isFr() ? fr : isEn() ? en : ar; }
+        function detectLanguage() {
+            const lang = (navigator.languages && navigator.languages[0] || navigator.language || 'ar').toLowerCase();
+            return lang.startsWith('fr') ? 'fr' : lang.startsWith('en') ? 'en' : 'ar';
         }
 
         let payMethod = 'transfer';
@@ -965,9 +963,7 @@ STYLE: realistic, premium commercial, clean editing`
 
         function requireAccount() {
             if (isPaid()) return true;
-            const msg = isEn()
-                ? '🔒 Please subscribe to use this feature.'
-                : '🔒 يرجى الاشتراك لاستخدام هذه الميزة.';
+            const msg = isFr() ? '🔒 Veuillez vous abonner pour utiliser cette fonctionnalité.' : isEn() ? '🔒 Please subscribe to use this feature.' : '🔒 يرجى الاشتراك لاستخدام هذه الميزة.';
             document.getElementById('status').textContent = msg;
             openSubscribe();
             return false;
@@ -1027,13 +1023,11 @@ STYLE: realistic, premium commercial, clean editing`
                 if (!r.ok) throw new Error('HTTP ' + r.status);
                 localStorage.setItem('mymodel_user', JSON.stringify({ email: email, method: 'claim-pending' }));
                 closeSubscribe();
-                document.getElementById('status').textContent = isEn()
-                    ? '⏳ Request received. Your subscription will activate after admin review.'
-                    : '⏳ تم استلام الطلب. سيتم تفعيل الاشتراك بعد مراجعة الإدارة.';
+                document.getElementById('status').textContent = tr('⏳ تم استلام الطلب. سيتم تفعيل الاشتراك بعد مراجعة الإدارة.', '⏳ Request received. Your subscription will activate after admin review.', '⏳ Demande reçue. Votre abonnement sera activé après vérification.');
             } catch (e) {
                 btn.disabled = false;
                 btn.innerHTML = original;
-                alert(isEn() ? 'Could not send request. Try again.' : 'تعذر إرسال الطلب. حاول مجدداً.');
+                alert(tr('تعذر إرسال الطلب. حاول مجدداً.', 'Could not send request. Try again.', 'Impossible d’envoyer la demande. Réessayez.'));
             }
         }
 
@@ -1044,7 +1038,7 @@ STYLE: realistic, premium commercial, clean editing`
             const email = (document.getElementById('msgEmail').value || '').trim();
             const text = (document.getElementById('msgText').value || '').trim();
             if (text.length < 3) {
-                alert(isEn() ? 'Please write a message' : 'اكتب رسالة من فضلك'); return;
+                alert(tr('اكتب رسالة من فضلك', 'Please write a message', 'Veuillez écrire un message')); return;
             }
             try {
                 const r = await fetch(SUPABASE_URL + '/rest/v1/messages', {
@@ -1062,7 +1056,7 @@ STYLE: realistic, premium commercial, clean editing`
                 document.getElementById('msgOk').style.display = 'block';
                 setTimeout(() => { closeContact(); document.getElementById('msgOk').style.display = 'none'; }, 1800);
             } catch (e) {
-                alert(isEn() ? 'Could not send. Try again.' : 'تعذر الإرسال. حاول مجدداً.');
+                alert(tr('تعذر الإرسال. حاول مجدداً.', 'Could not send. Try again.', 'Impossible d’envoyer. Réessayez.'));
             }
         }
 
@@ -1307,12 +1301,10 @@ STYLE: realistic, premium commercial, clean editing`
                 ? videoPrompts.main
                 : imagePrompt;
             const name = type === 'video'
-                ? (isEn() ? 'Video prompt' : 'برومبت الفيديو')
-                : (isEn() ? 'Image prompt' : 'برومبت الصورة');
+                ? tr('برومبت الفيديو', 'Video prompt', 'prompt vidéo')
+                : tr('برومبت الصورة', 'Image prompt', 'prompt image');
             const done = () => {
-                document.getElementById('status').textContent = isEn()
-                    ? '✅ ' + name + ' copied'
-                    : '✅ تم نسخ ' + name;
+                document.getElementById('status').textContent = tr('✅ تم نسخ ' + name, '✅ ' + name + ' copied', '✅ ' + name + ' copié');
             };
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
@@ -1342,6 +1334,8 @@ STYLE: realistic, premium commercial, clean editing`
             }
         })();
 
+        // Open using the phone/browser language: Arabic, English, or French.
+        setLang(detectLanguage());
         // Init paid state
         updatePaidUI();
         verifyCentral(); // تحقق مركزي من الاشتراك عبر Supabase
@@ -1354,18 +1348,18 @@ STYLE: realistic, premium commercial, clean editing`
             <button type="button" class="modal-close" onclick="closeContact()">×</button>
             <h2>
                 <span class="ar">💬 راسلنا</span>
-                <span class="en">💬 Contact Us</span>
+                <span class="en">💬 Contact Us</span><span class="fr">💬 Nous contacter</span>
             </h2>
-            <label style="margin-top:0.8rem"><span class="ar">إيميلك (اختياري)</span><span class="en">Your email (optional)</span></label>
+            <label style="margin-top:0.8rem"><span class="ar">إيميلك (اختياري)</span><span class="en">Your email (optional)</span><span class="fr">Votre e-mail (facultatif)</span></label>
             <input type="email" id="msgEmail" placeholder="email@example.com">
-            <label style="margin-top:0.7rem"><span class="ar">رسالتك</span><span class="en">Your message</span></label>
+            <label style="margin-top:0.7rem"><span class="ar">رسالتك</span><span class="en">Your message</span><span class="fr">Votre message</span></label>
             <textarea id="msgText" rows="4" style="width:100%;padding:0.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:#0f0f0f;color:var(--text);font-family:'Cairo',sans-serif;font-size:0.95rem;outline:none;resize:vertical" placeholder="..."></textarea>
             <button type="button" class="btn btn-gold" style="width:100%;margin-top:1rem" onclick="sendMessage()">
-                <span class="ar">📨 إرسال</span><span class="en">📨 Send</span>
+                <span class="ar">📨 إرسال</span><span class="en">📨 Send</span><span class="fr">📨 Envoyer</span>
             </button>
             <div class="msg ok" id="msgOk" style="display:none;margin-top:0.8rem;border-radius:10px;padding:0.7rem;background:rgba(46,125,50,0.15);color:#7ddb85;font-weight:700;text-align:center">
                 <span class="ar">✅ تم إرسال رسالتك! سنرد عليك قريباً.</span>
-                <span class="en">✅ Message sent! We will reply soon.</span>
+                <span class="en">✅ Message sent! We will reply soon.</span><span class="fr">✅ Message envoyé ! Nous vous répondrons bientôt.</span>
             </div>
         </div>
     </div>
@@ -1375,19 +1369,19 @@ STYLE: realistic, premium commercial, clean editing`
         <div class="pay-wait-card">
             <h2>
                 <span class="ar">💳 أكمل الدفع الآن</span>
-                <span class="en">💳 Complete your payment</span>
+                <span class="en">💳 Complete your payment</span><span class="fr">💳 Finalisez votre paiement</span>
             </h2>
             <ul class="pay-steps">
-                <li><span class="num">1</span><span class="ar">حوّل 3500 د.ج عبر بريدي موب أو مكتب البريد إلى CCP <b>0025148966/05</b></span><span class="en">Payment page opened in a <b>new tab</b> — complete it there (BaridiMob / Gold Card)</span></li>
-                <li><span class="num">2</span><span class="ar">بعد نجاح الدفع، اضغط الزر بالأسفل وأدخل إيميلك</span><span class="en">After success, press the button below and enter your email</span></li>
-                <li><span class="num">3</span><span class="ar">يُفعَّل اشتراكك بعد مراجعة الإدارة ✨</span><span class="en">Your subscription activates after admin review ✨</span></li>
+                <li><span class="num">1</span><span class="ar">حوّل 3500 د.ج عبر بريدي موب أو مكتب البريد إلى CCP <b>0025148966/05</b></span><span class="en">Payment page opened in a <b>new tab</b> — complete it there (BaridiMob / Gold Card)</span><span class="fr">La page de paiement est ouverte dans un nouvel onglet — terminez le paiement ici (BaridiMob / carte Gold)</span></li>
+                <li><span class="num">2</span><span class="ar">بعد نجاح الدفع، اضغط الزر بالأسفل وأدخل إيميلك</span><span class="en">After success, press the button below and enter your email</span><span class="fr">Après le paiement, appuyez sur le bouton ci-dessous et saisissez votre e-mail</span></li>
+                <li><span class="num">3</span><span class="ar">يُفعَّل اشتراكك بعد مراجعة الإدارة ✨</span><span class="en">Your subscription activates after admin review ✨</span><span class="fr">Votre abonnement sera activé après vérification ✨</span></li>
             </ul>
             <button type="button" class="pay-big-btn" onclick="closePayWait(); loginWithEmail();">
                 <span class="ar">✅ أكملت الدفع — فعّل اشتراكي</span>
-                <span class="en">✅ I paid — activate my subscription</span>
+                <span class="en">✅ I paid — activate my subscription</span><span class="fr">✅ J’ai payé — activer mon abonnement</span>
             </button>
             <button type="button" class="btn btn-outline" style="width:100%; margin-top:0.7rem" onclick="closePayWait()">
-                <span class="ar">إغلاق</span><span class="en">Close</span>
+                <span class="ar">إغلاق</span><span class="en">Close</span><span class="fr">Fermer</span>
             </button>
         </div>
     </div>
